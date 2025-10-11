@@ -15,13 +15,7 @@ onMounted(() => {
 <template>
   <div class="app">
     <LoadingVue v-if="isLoading" />
-    <div v-else class="main-content">
-      <h1>You did it!</h1>
-      <p>
-        Visit <a class="" href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-        documentation
-      </p>
-    </div>
+    <router-view v-else />
   </div>
 </template>
 
@@ -30,18 +24,5 @@ onMounted(() => {
   background-color: #0b0c0d;
   min-height: 100vh;
   color: #ffffff;
-}
-
-.main-content {
-  padding: 2rem;
-}
-
-.main-content a {
-  color: #4ade80;
-  text-decoration: none;
-}
-
-.main-content a:hover {
-  text-decoration: underline;
 }
 </style>

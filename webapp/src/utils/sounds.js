@@ -1,22 +1,24 @@
-// Утилита для проигрывания звуков
-export const playSound = (soundPath, volume = 0.5) => {
+// Утилита для воспроизведения звуков
+export function playClickSound() {
   try {
-    const audio = new Audio(soundPath)
-    audio.volume = volume
-    audio.play().catch(e => {
-      console.log('Не удалось воспроизвести звук:', e)
+    const audio = new Audio('/sound/click.mp3')
+    audio.volume = 0.5 // Устанавливаем громкость 50%
+    audio.play().catch(error => {
+      console.warn('Не удалось воспроизвести звук клика:', error)
     })
   } catch (error) {
-    console.log('Ошибка при загрузке звука:', error)
+    console.warn('Ошибка при создании аудио элемента:', error)
   }
 }
 
-// Предустановленные звуки
-export const sounds = {
-  click: '/sound/click.mp3'
-}
-
-// Специализированная функция для звука клика
-export const playClickSound = (volume = 0.5) => {
-  playSound(sounds.click, volume)
+export function playSound(soundPath, volume = 0.5) {
+  try {
+    const audio = new Audio(soundPath)
+    audio.volume = volume
+    audio.play().catch(error => {
+      console.warn(`Не удалось воспроизвести звук ${soundPath}:`, error)
+    })
+  } catch (error) {
+    console.warn('Ошибка при создании аудио элемента:', error)
+  }
 }
