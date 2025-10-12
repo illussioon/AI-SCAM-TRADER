@@ -22,3 +22,4 @@ export function playSound(soundPath, volume = 0.5) {
     console.warn('Ошибка при создании аудио элемента:', error)
   }
 }
+

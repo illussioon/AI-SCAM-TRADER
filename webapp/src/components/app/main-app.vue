@@ -1,18 +1,44 @@
 <template>
   <div class="app-container">
-    <!-- Основное содержимое приложения -->
-    <div class="content">
-      <h1 class="welcome-title">Добро пожаловать в приложение</h1>
-      <p class="welcome-text">Это главная страница приложения</p>
+    <!-- Подключаем Header компонент -->
+    <HeaderApp />
+    
+    <!-- Подключаем криптовалютную ленту -->
+    <div style="margin-top: 6px;">
+      <CryptoScroll />
     </div>
     
+    <div style="margin: 6px;">
+      <PhotoScroll />
+    </div>
+
+   <Topmenu />
+
+   <div style="margin: -4px 8px 0 8px;">
+      <Footer />
+    </div>
+
+    
+    <!-- Основное содержимое приложения -->
+    <div class="absolute w-[27px] h-[54px] blur-[40px] opacity-[0.77] pointer-events-none will-change-auto" style="background: rgb(140, 246, 5); top: 60px; left: 0px; z-index: 30; transform: translateZ(0px); backface-visibility: hidden;"></div>
+  
+    
     <!-- Подключаем Menu компонент -->
-    <Menu />
+    <div style="margin-top: 120px;">
+      <Menu />
+    </div>
+   
   </div>
 </template>
 
 <script setup>
 import Menu from './menu.vue'
+import HeaderApp from './header-app.vue'
+import CryptoScroll from './crypto-scroll.vue'
+import PhotoScroll from './app-main-content/photo-scroll.vue'
+import NewsMain from './app-main-content/news-main.vue'
+import Footer from './footer.vue'
+import Topmenu from './topmenu.vue'
 
 // Главная страница приложения
 </script>
@@ -23,7 +49,9 @@ import Menu from './menu.vue'
   background-color: #0b0c0d;
   color: #ffffff;
   position: relative;
-  padding: 20px;
+  padding: 0; /* Убираем padding для header */
+  display: flex;
+  flex-direction: column;
 }
 
 .content {
@@ -31,8 +59,10 @@ import Menu from './menu.vue'
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 120px);
+  flex: 1; /* Заполняем доступное пространство */
+  min-height: calc(100vh - 180px); /* Учитываем header и menu */
   text-align: center;
+  padding: 20px;
 }
 
 .welcome-title {
@@ -57,6 +87,11 @@ import Menu from './menu.vue'
   .welcome-text {
     font-size: 16px;
   }
+  
+  .content {
+    min-height: calc(100vh - 160px);
+    padding: 15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -68,7 +103,8 @@ import Menu from './menu.vue'
     font-size: 14px;
   }
   
-  .app-container {
+  .content {
+    min-height: calc(100vh - 140px);
     padding: 15px;
   }
 }

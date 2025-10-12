@@ -375,3 +375,4 @@ const navigateProfile = () => {
   }
 }
 </style>
+
