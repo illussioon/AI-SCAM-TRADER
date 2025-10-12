@@ -261,7 +261,7 @@
         </div>
         <div class="flex items-center justify-center w-[135px] h-[25px] rounded-full font-bold bg-white/10 text-[12.5px] text-white">Переводы на карту</div>
       </div>
-      <p class="mt-5 text-[12.5px] text-center opacity-50">© Royal 2025. LTD <br>Все права и торговые знаки зарегистрированы согласно правилам и политики компании а также страны где она официально зарегистрирована и подчиняется ее регуляторам.</p>
+      <p class="mt-5 text-[14px] text-center opacity-50">© Royal 2025. LTD <br>Все права и торговые знаки зарегистрированы согласно правилам и политики компании а также страны где она официально<br> зарегистрирована и подчиняется ее регуляторам.</p>
     </footer>
   </template>
   

@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainApp from './components/app/main-app.vue'
 import MainTutorial from './components/main/main.vue'
+import Wallet from './components/app/wallet/wallet.vue'
+import Profile from './components/app/profile/profile.vue'
+import Friends from './components/app/friends/friends.vue'
 
 const routes = [
   {
@@ -12,6 +15,21 @@ const routes = [
     path: '/tutorial',
     name: 'Tutorial', 
     component: MainTutorial
+  },
+  {
+    path: '/wallet',
+    name: 'Wallet',
+    component: Wallet
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
+  },
+  {
+    path: '/friends',
+    name: 'Friends',
+    component: Friends
   }
 ]
 
@@ -21,4 +39,5 @@ const router = createRouter({
 })
 
 export default router
+
 

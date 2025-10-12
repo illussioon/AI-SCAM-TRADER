@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import BalancePopup from './balance-popup.vue';
+
+// Инициализация роутера
+const router = useRouter();
 
 // Состояние для управления видимостью попапа
 const isBalancePopupVisible = ref(false);
@@ -15,6 +19,12 @@ const handleWalletClick = () => {
   console.log('Переход в кошелек');
   // Здесь можно добавить логику перехода в кошелек
   isBalancePopupVisible.value = false; // Закрываем попап
+};
+
+// Функция для навигации в профиль
+const navigateToProfile = () => {
+  router.push('/profile');
+  console.log('Navigate to Profile');
 };
 </script>
 
@@ -136,11 +146,11 @@ const handleWalletClick = () => {
             </button>
           </div>
         </div>
-        <a href="/profile" data-discover="true">
+        <button @click="navigateToProfile" class="cursor-pointer">
           <div class="w-[37px] h-[37px] rounded-full border-[1px] border-[#5EFF03] shadow-[0_0_25px_rgba(94,255,3,0.25)] p-[1px] flex items-center justify-center">
             <div class="w-full h-full bg-white border border-[#18191D] rounded-full"></div>
           </div>
-        </a>
+        </button>
       </div>
     </div>
     

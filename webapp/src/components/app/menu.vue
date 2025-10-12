@@ -174,39 +174,47 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { playClickSound } from '../../utils/sounds.js'
 
-const activeTab = ref('home')
+const router = useRouter()
+const route = useRoute()
+
+const activeTab = computed(() => {
+  if (route.path === '/wallet') return 'wallet'
+  if (route.path === '/profile') return 'profile'
+  if (route.path === '/friends') return 'friends'
+  if (route.path === '/') return 'home'
+  return 'home'
+})
 
 const navigateHome = () => {
   playClickSound()
-  activeTab.value = 'home'
-  // Остаемся на главной странице (уже на /)
+  router.push('/')
   console.log('Navigate to Home')
 }
 
 const navigateWallet = () => {
   playClickSound()
-  activeTab.value = 'wallet'
+  router.push('/wallet')
   console.log('Navigate to Wallet')
 }
 
 const navigateCabinet = () => {
   playClickSound()
-  activeTab.value = 'cabinet'
   console.log('Navigate to Cabinet')
 }
 
 const navigateFriends = () => {
   playClickSound()
-  activeTab.value = 'friends'
+  router.push('/friends')
   console.log('Navigate to Friends')
 }
 
 const navigateProfile = () => {
   playClickSound()
-  activeTab.value = 'profile'
+  router.push('/profile')
   console.log('Navigate to Profile')
 }
 </script>

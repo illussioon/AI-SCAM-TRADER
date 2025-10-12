@@ -10,7 +10,17 @@
           <div class="animate-marquee flex gap-6 whitespace-nowrap py-1 text-xs/5 opacity-90" style="width: 200%;">
             <!-- Render the list of cryptocurrencies twice for a seamless loop -->
             <div v-for="crypto in cryptoData" :key="crypto.alt" class="flex shrink-0 items-center gap-1">
-              <img :alt="crypto.alt" class="w-4 h-4 rounded-full" :src="crypto.iconSrc" />
+              <CryptoIcon 
+                v-if="crypto.iconName" 
+                :name="crypto.iconName" 
+                class="w-3 h-3 rounded-full -translate-y-0.5" 
+              />
+              <img 
+                v-else
+                :alt="crypto.alt" 
+                class="w-3 h-3 rounded-full -translate-y-0.5" 
+                :src="crypto.iconSrc" 
+              />
               <span class="font-medium">{{ crypto.alt }}</span>
               <span class="ml-1">{{ crypto.price }}</span>
               <span :class="crypto.change.includes('+') ? 'text-green-400' : 'text-red-400'">
@@ -19,7 +29,17 @@
             </div>
             <!-- Second set of items for the animation -->
              <div v-for="crypto in cryptoData" :key="crypto.alt + '-clone'" class="flex shrink-0 items-center gap-1">
-              <img :alt="crypto.alt" class="w-4 h-4 rounded-full" :src="crypto.iconSrc" />
+              <CryptoIcon 
+                v-if="crypto.iconName" 
+                :name="crypto.iconName" 
+                class="w-4 h-4 rounded-full -translate-y-0.5" 
+              />
+              <img 
+                v-else
+                :alt="crypto.alt" 
+                class="w-4 h-4 rounded-full -translate-y-0.5" 
+                :src="crypto.iconSrc" 
+              />
               <span class="font-medium">{{ crypto.alt }}</span>
               <span class="ml-1">{{ crypto.price }}</span>
               <span :class="crypto.change.includes('+') ? 'text-green-400' : 'text-red-400'">
@@ -34,13 +54,14 @@
   
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import CryptoIcon from '../icon.vue';
 
 // Реактивные данные для криптовалют
 const cryptoData = ref([
   {
     id: 'solana',
     alt: 'SOL',
-    iconSrc: '/icon/solana.svg',
+    iconName: 'solana',
     price: '$0.00',
     change: '(0.00%)',
   },

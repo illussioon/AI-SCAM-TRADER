@@ -37,35 +37,52 @@
     </div>
     
     <!-- Tab content -->
-    <div class="tab-content">
+    <div class="tab-content relative overflow-hidden">
       <!-- Новости таб -->
-      <div v-if="activeTab === 0">
-        <div class="text-center text-white/60 py-8">
+      <Transition name="fade" mode="out-in">
+        <div v-if="activeTab === 0" key="news" class="transition-all duration-300 ease-in-out">
+          <div class="text-center text-white py-8">
+            <div style="margin: -40px 8px 0 8px;">
+            <CryptoLive />
+          </div>
+              <div style="margin: 6px;">
+            <Nesw />
+          </div>
+          </div>  
+        </div>
+        
+        <!-- Тарифы таб -->
+        <div v-else-if="activeTab === 1" key="tariffs" class="transition-all duration-300 ease-in-out">
+          <div style="margin: 6px;">
+            <LiveTransaction />
+          </div>
+          <div style="margin: 6px;">
+            <Tarifs />
+          </div>
+          <div style="margin: -4px 8px 0 8px;">
+            <NEWSslider />
+          </div>
+        </div>
+        
+        <!-- FAQ таб -->
+        <div v-else-if="activeTab === 2" key="faq" class="transition-all duration-300 ease-in-out">
+          <div class="text-white/60 py-8">
+            <div style="margin: -30px 8px 0 8px;">
+              <faq1 />  
+            </div>
+            
+            <h2 class="text-[14px] text-white/40 mt-3 pl-1.5 text-left">Научись зарабатывать на криптовалюте за 5 минут! </h2>
+            
+            <div style="margin: -4px 8px 0 8px;">
+              <Shit />
+              <Gift />
+            </div>
             <div style="margin: 6px;">
-          <Nesw />
+            <FAQ />
+          </div>
+          </div>
         </div>
-        </div>  
-      </div>
-      
-      <!-- Тарифы таб -->
-      <div v-if="activeTab === 1">
-        <div style="margin: 6px;">
-          <LiveTransaction />
-        </div>
-        <div style="margin: 6px;">
-          <Tarifs />
-        </div>
-        <div style="margin: -4px 8px 0 8px;">
-          <NEWSslider />
-        </div>
-      </div>
-      
-      <!-- FAQ таб -->
-      <div v-if="activeTab === 2">
-        <div class="text-center text-white/60 py-8">
-          FAQ контент будет здесь
-        </div>
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -75,10 +92,16 @@
   import NEWSslider from './app-main-content/NEWS-slider.vue'
   import LiveTransaction from './app-main-content/live-transaction.vue'
   import Nesw from './app-main-content/news-main.vue'
+  import CryptoLive from './app-main-content/live-curse.vue'
+  import FAQ from './app-main-content/FAQ/faq.vue'
+  import Shit from './app-main-content/FAQ/shit.vue'
+  import Gift from './app-main-content/FAQ/gift.vue'
+  import faq1 from './app-main-content/FAQ/faq1.vue'
+
   import { ref, computed, onMounted, nextTick } from 'vue'
   
   const tabs = ['Новости', 'Тарифы', 'FAQ']
-  const activeTab = ref(0)
+  const activeTab = ref(1)
   const tabRefs = ref([])
   
   const glowPosition = computed(() => {
@@ -100,3 +123,26 @@
     }
   })
   </script>
+  
+  <style scoped>
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+  
+  .fade-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .fade-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .fade-enter-to,
+  .fade-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  </style>

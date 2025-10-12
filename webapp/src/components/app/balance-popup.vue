@@ -1,17 +1,17 @@
 <template>
     <!-- 
-      Используем v-if для условного рендеринга диалогового окна.
-      Оно будет отображаться только тогда, когда пропс `visible` равен true.
+      Используем Transition для плавного появления/исчезновения попапа
     -->
-    <div
-      v-if="visible"
-      role="dialog"
-      aria-labelledby="dialog-title"
-      :data-state="visible ? 'open' : 'closed'"
-      class="bg-[#141517] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[55px] right-[25px] z-50 grid w-[313px] h-[232px] gap-4 rounded-lg border border-[#2A2B2D] p-6 shadow-lg duration-200 pt-5 px-3"
-      tabindex="-1"
-      style="pointer-events: auto;"
-    >
+    <Transition name="popup" mode="out-in">
+      <div
+        v-if="visible"
+        role="dialog"
+        aria-labelledby="dialog-title"
+        :data-state="visible ? 'open' : 'closed'"
+        class="bg-[#141517] fixed top-[55px] right-[25px] z-50 grid w-[313px] h-[232px] gap-4 rounded-lg border border-[#2A2B2D] p-6 shadow-lg pt-5 px-3"
+        tabindex="-1"
+        style="pointer-events: auto;"
+      >
       <div class="flex flex-col">
         <p id="dialog-title" class="text-[20px] font-semibold">Баланс</p>
         
@@ -72,7 +72,8 @@
         </button>
       </div>
     </div>
-  </template>
+  </Transition>
+</template>
   
   <script setup>
   import { ref } from 'vue';
@@ -97,8 +98,25 @@
   </script>
   
   <style scoped>
-  /* Tailwind CSS классы, использованные в шаблоне, будут работать,
-    если Tailwind CSS подключен в вашем проекте.
-    Никаких дополнительных стилей здесь не требуется.
-  */
+  /* CSS анимации для плавного появления/исчезновения popup */
+  .popup-enter-active,
+  .popup-leave-active {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .popup-enter-from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  
+  .popup-leave-to {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  
+  .popup-enter-to,
+  .popup-leave-from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
   </style>
