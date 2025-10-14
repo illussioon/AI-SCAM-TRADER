@@ -4,6 +4,7 @@ import MainTutorial from './components/main/main.vue'
 import Wallet from './components/app/wallet/wallet.vue'
 import Profile from './components/app/profile/profile.vue'
 import Friends from './components/app/friends/friends.vue'
+import Cabinet from './components/app/cabinet/cabinet.vue'
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: '/friends',
     name: 'Friends',
     component: Friends
+  },
+  {
+    path: '/cabinet',
+    name: 'Cabinet',
+    component: Cabinet
   }
 ]
 

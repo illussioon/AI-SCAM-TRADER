@@ -16,7 +16,7 @@
           </div>
           <div class="flex flex-col items-center -space-y-2">
             <p class="text-[12px] opacity-40">Онлайн</p>
-            <p class="text-[16px] font-semibold">2</p>
+            <p class="text-[16px] font-semibold">{{ currentOnline }}</p>
           </div>
           <div class="absolute -bottom-14 right-2 w-[37.51px] h-[28.68px] opacity-100" style="filter: blur(40.8175px); background: linear-gradient(rgb(217, 217, 217) 0%, rgb(99, 102, 104) 100%);"></div>
         </div>
@@ -43,6 +43,79 @@
     </div>
   </template>
   
-  <script setup>
-  // No script needed for static content
-  </script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useApi } from '../../../composables/useApi.js'
+
+// API композабл
+const api = useApi()
+
+// Реактивные данные
+const currentOnline = ref('...')
+const isLoading = ref(false)
+const error = ref(null)
+
+// Интервал для обновления данных
+let updateInterval = null
+
+// Функция загрузки онлайна
+const fetchOnline = async () => {
+  try {
+    isLoading.value = true
+    error.value = null
+    
+    const response = await api.getOnline()
+    currentOnline.value = response.online
+    
+    // Логируем расширенную информацию из нового API
+    const timeToNext = response.time_to_next_update || 0
+    const serverUpdateInterval = response.update_interval || 300
+    
+    console.log('📊 Онлайн обновлен:', response.online)
+    console.log(`⏰ До следующего обновления: ${timeToNext}с (серверный интервал: ${serverUpdateInterval}с)`)
+    
+    // Если онлайн скоро обновится на сервере, можно подстроить клиентский интервал
+    if (timeToNext > 0 && timeToNext < 60) {
+      console.log('🔄 Скоро серверное обновление, подстраиваем интервал клиента')
+    }
+    
+  } catch (err) {
+    console.error('❌ Ошибка получения онлайна:', err)
+    error.value = err.message
+    // В случае ошибки показываем предыдущее значение или placeholder
+    if (currentOnline.value === '...') {
+      currentOnline.value = '—'
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Запуск обновления онлайна
+const startOnlineUpdates = () => {
+  // Сразу загружаем данные
+  fetchOnline()
+  
+  // Затем обновляем каждые 30 секунд
+  updateInterval = setInterval(fetchOnline, 30000)
+}
+
+// Остановка обновления
+const stopOnlineUpdates = () => {
+  if (updateInterval) {
+    clearInterval(updateInterval)
+    updateInterval = null
+  }
+}
+
+// Жизненный цикл компонента
+onMounted(() => {
+  console.log('🔄 Запуск обновления онлайна...')
+  startOnlineUpdates()
+})
+
+onUnmounted(() => {
+  console.log('⏹️ Остановка обновления онлайна...')
+  stopOnlineUpdates()
+})
+</script>

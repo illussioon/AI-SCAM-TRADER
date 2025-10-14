@@ -18,11 +18,15 @@
           <p class="text-[33px] font-semibold">
             <span class="opacity-60">₽</span>{{ formattedBalance.integer }}<span class="text-[20px] opacity-60">{{ formattedBalance.fraction }}</span>
           </p>
+          <!-- Loading indicator -->
+          <div v-if="isLoading" class="ml-2 mt-2">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white opacity-60"></div>
+          </div>
         </div>
         <div class="w-full h-px bg-[#86F903] -mt-2"></div>
   
         <!-- Daily Stats -->
-        <div class="flex mt-2 space-x-1">
+        <div class="flex mt-2 space-x-1" v-if="!error">
           <!-- Daily Gain -->
           <div class="rounded-[4px] backdrop-blur-[68px] bg-[rgba(134,248,4,0.3)] flex h-[18px] px-1 justify-center items-center text-center">
             <p class="text-[15px] mt-[2px] text-[rgb(134,248,4)]">+{{ dailyGain }}₽</p>
@@ -37,6 +41,13 @@
                 {{ percentageChange }}%<span class="text-[10px] text-white opacity-40">24h</span>
               </div>
             </div>
+          </div>
+        </div>
+        
+        <!-- Error State -->
+        <div v-if="error" class="flex mt-2">
+          <div class="rounded-[4px] backdrop-blur-[68px] bg-[rgba(255,0,0,0.3)] flex h-[18px] px-1 justify-center items-center text-center">
+            <p class="text-[13px] mt-[2px] text-red-300">Ошибка загрузки</p>
           </div>
         </div>
       </div>
@@ -90,13 +101,16 @@
     </div>
 
     <!-- Modals -->
-    <DepositModal v-model="showDepositModal" />
-    <WithdrawModal v-model="showWithdrawModal" />
+     <div style="z-index: 9999;">
+      <DepositModal v-model="showDepositModal" />
+      <WithdrawModal v-model="showWithdrawModal" />
+    </div>
   </template>
   
 <script setup>
 import { ref, computed } from 'vue';
 import { playClickSound } from '../../../utils/sounds.js';
+import { useUser } from '../../../composables/useUser.js';
 import DepositModal from './popup/deposit/main-popup-depos.vue';
 import WithdrawModal from './popup/vivod/main-popup-vivod.vue';
 
@@ -110,22 +124,54 @@ import WithdrawModal from './popup/vivod/main-popup-vivod.vue';
 //   // ... other props
 // });
 
-// --- Reactive State ---
-// I'm using local state here. You can replace this with props or a store like Pinia.
-const balance = ref(0.00); // Example balance
-const dailyGain = ref(0); // Example daily gain
-const percentageChange = ref(0); // Example percentage change
+// --- User Data Integration ---
+const { 
+  balance, 
+  profitAll, 
+  isLoading, 
+  hasUserData,
+  error,
+  formattedBalances 
+} = useUser();
+
+// --- Modal State ---
 const showDepositModal = ref(false); // Modal visibility state
 const showWithdrawModal = ref(false); // Withdrawal modal visibility state
 
+// --- Computed Daily Stats ---
+const dailyGain = computed(() => {
+  // Используем profitAll как дневной прирост
+  if (!hasUserData.value) return 0;
+  const profit = parseFloat(profitAll.value) || 0;
+  return profit.toFixed(2);
+});
+
+const percentageChange = computed(() => {
+  // Простой расчет процента изменения
+  if (!hasUserData.value) return 0;
+  const currentBalance = parseFloat(balance.value) || 0;
+  const profit = parseFloat(profitAll.value) || 0;
+  
+  if (currentBalance === 0) return 0;
+  return ((profit / currentBalance) * 100).toFixed(1);
+});
+
 // --- Computed Properties ---
-// This computed property formats the balance to separate the integer and fractional parts
-// for styling, just like in your original HTML.
+// Форматируем баланс для отображения с разделением на целую и дробную части
 const formattedBalance = computed(() => {
-  const [integer, fraction] = balance.value.toFixed(2).split('.');
+  if (isLoading.value) {
+    return { integer: '---', fraction: '.--' };
+  }
+  
+  if (!hasUserData.value) {
+    return { integer: '0', fraction: '.00' };
+  }
+  
+  const balanceValue = parseFloat(balance.value) || 0;
+  const [integer, fraction] = balanceValue.toFixed(2).split('.');
   return {
-    integer,
-    fraction: `.${fraction}`,
+    integer: integer || '0',
+    fraction: `.${fraction || '00'}`,
   };
 });
 

@@ -72,14 +72,14 @@
 
         <!-- Кабинет (центральная кнопка) -->
         <button type="button" class="menu-button center-button" @click="navigateCabinet">
-          <div class="center-icon">
+          <div class="center-icon" :class="activeTab === 'cabinet' ? 'center-icon-active' : ''">
             <svg
               viewBox="0 0 30 30"
               xmlns="http://www.w3.org/2000/svg"
               width="30"
               height="30"
               fill="none"
-              class="text-black"
+              :class="activeTab === 'cabinet' ? 'text-black' : 'text-black'"
             >
               <rect width="30" height="30" x="0" y="0"></rect>
               <path
@@ -89,7 +89,7 @@
               ></path>
             </svg>
           </div>
-          <span class="center-label">Кабинет</span>
+          <span :class="activeTab === 'cabinet' ? 'text-primary' : 'text-inactive'" class="center-label">Кабинет</span>
         </button>
 
         <!-- Друзья -->
@@ -183,8 +183,9 @@ const route = useRoute()
 
 const activeTab = computed(() => {
   if (route.path === '/wallet') return 'wallet'
-  if (route.path === '/profile') return 'profile'
+  if (route.path === '/cabinet') return 'cabinet'
   if (route.path === '/friends') return 'friends'
+  if (route.path === '/profile') return 'profile'
   if (route.path === '/') return 'home'
   return 'home'
 })
@@ -203,6 +204,7 @@ const navigateWallet = () => {
 
 const navigateCabinet = () => {
   playClickSound()
+  router.push('/cabinet')
   console.log('Navigate to Cabinet')
 }
 
@@ -322,6 +324,11 @@ const navigateProfile = () => {
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
+  transition: background 0.2s ease;
+}
+
+.center-icon-active {
+  background: #8EF804;
 }
 
 .center-icon svg {

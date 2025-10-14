@@ -64,7 +64,7 @@
           </svg>
           <p class="text-[15px] opacity-50 translate-y-[3px]">Партнерская ссылка</p>
         </div>
-        <p class="text-[16px]">{{ referralLink }}</p>
+        <p class="text-[16px] truncate max-w-full">{{ referralLink || 'Загрузка...' }}</p>
       </div>
   
       <!-- Action Buttons -->
@@ -122,8 +122,14 @@
               </clipPath>
             </defs>
           </svg>
-          <p class="text-[24px] relative z-10 font-semibold">{{ partnersCount }}</p>
-          <p class="text-[16px] opacity-50 relative z-10">Партнеров</p>
+          <div v-if="isLoading" class="relative z-10 animate-pulse">
+            <div class="w-8 h-6 bg-gray-600 rounded mb-1"></div>
+            <div class="w-16 h-4 bg-gray-600 rounded"></div>
+          </div>
+          <div v-else class="relative z-10 text-center">
+            <p class="text-[24px] font-semibold">{{ partnersCount }}</p>
+            <p class="text-[16px] opacity-50">Партнеров</p>
+          </div>
         </div>
   
         <!-- Earnings Card -->
@@ -148,28 +154,109 @@
               </clipPath>
             </defs>
           </svg>
-          <p class="text-[24px] relative z-10 font-semibold">{{ earnings }}₽</p>
-          <p class="text-[16px] opacity-50 relative z-10">Заработано</p>
+          <div v-if="isLoading" class="relative z-10 animate-pulse">
+            <div class="w-12 h-6 bg-gray-600 rounded mb-1"></div>
+            <div class="w-20 h-4 bg-gray-600 rounded"></div>
+          </div>
+          <div v-else class="relative z-10 text-center">
+            <p class="text-[24px] font-semibold">{{ formattedEarnings }}₽</p>
+            <p class="text-[16px] opacity-50">Заработано</p>
+          </div>
         </div>
       </div>
+      
+      <!-- Временная отладочная информация (убрать в продакшене) -->
+      <div v-if="error" class="mt-3 p-3 bg-red-900/20 border border-red-500/30 rounded-lg relative z-10">
+        <p class="text-red-400 text-sm">❌ {{ error }}</p>
+        <button 
+          @click="refreshReferralData"
+          class="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
+        >
+          🔄 Повторить
+        </button>
+      </div>
+      
+      <!-- Подробная отладочная панель -->
     </div>
   </template>
   
-  <script setup>
-  import { ref } from 'vue'
+<script setup>
+import { computed, onMounted } from 'vue'
+import { useTelegramStore } from '../../../stores/telegram.js'
+import { useReferral } from '../../../composables/useReferral.js'
+import TelegramDebug from '../../TelegramDebug.vue'
+
+// Stores и композаблы
+const telegramStore = useTelegramStore()
+const {
+  referralData,
+  isLoading,
+  error,
+  formattedEarnings,
+  loadReferralData,
+  shareReferralLink,
+  copyReferralLink,
+  refreshReferralData,
+  getCurrentReferralLink
+} = useReferral()
+
+// Вычисляемые свойства для удобного доступа
+const referralLink = computed(() => {
+  // Always ensure we have a link
+  return referralData.value.link || getCurrentReferralLink()
+})
+const partnersCount = computed(() => referralData.value.partnersCount)
+
+// Методы
+const shareReferral = () => shareReferralLink()
+const copyReferral = () => copyReferralLink()
+
+// Отладочная информация (можно убрать в продакшене)
+const debugInfo = computed(() => ({
+  telegramId: telegramStore.userId,
+  isInitialized: telegramStore.isInitialized,
+  user: telegramStore.user,
+  link: referralData.value.link,
+  partners: referralData.value.partnersCount,
+  earnings: referralData.value.totalEarnings,
+  isLoading: isLoading.value,
+  error: error.value
+}))
+
+// Жизненный цикл
+onMounted(async () => {
+  console.log('🚀 Монтирование компонента partner-program-links')
   
-  const referralLink = ref('https://t.me/RoyallAppBot?start=ref_0000')
-  const partnersCount = ref(0)
-  const earnings = ref(0)
-  
-  const shareReferral = () => {
-    // Логика для приглашения друга
-    console.log('Share referral link')
+  // Сразу генерируем ссылку, если возможно
+  if (telegramStore.userId || telegramStore.user?.id || telegramStore.initDataUnsafe?.user?.id) {
+    console.log('✅ Telegram ID доступен сразу, генерируем ссылку')
+    referralData.value.link = getCurrentReferralLink()
   }
   
-  const copyReferral = () => {
-    // Логика для копирования ссылки
-    navigator.clipboard.writeText(referralLink.value)
-    console.log('Referral link copied')
+  // Ждем инициализации Telegram store (с таймаутом)
+  let attempts = 0
+  const maxAttempts = 30 // 3 секунды максимум
+  
+  while (!telegramStore.isInitialized && attempts < maxAttempts) {
+    console.log(`⏳ Ожидание инициализации Telegram (попытка ${attempts + 1}/${maxAttempts})`)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    attempts++
   }
-  </script>
+  
+  if (!telegramStore.isInitialized) {
+    console.warn('⚠️ Telegram не инициализирован за 3 секунды, продолжаем с fallback данными')
+  }
+  
+  // Загружаем данные (это обновит ссылку, если API доступен)
+  console.log('📊 Загрузка реферальных данных...')
+  await loadReferralData()
+  
+  // Дополнительная проверка - убеждаемся, что ссылка есть
+  if (!referralData.value.link) {
+    console.log('🔧 Принудительная генерация ссылки как fallback')
+    referralData.value.link = getCurrentReferralLink()
+  }
+  
+  console.log('✅ Компонент partner-program-links полностью загружен')
+})
+</script>

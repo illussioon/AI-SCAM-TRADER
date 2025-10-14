@@ -19,8 +19,12 @@
         <div class="flex justify-between mt-1">
           <div class="flex flex-col -space-y-2">
             <p class="text-[16px] opacity-50">Основной счет</p>
-            <!-- Используем переменную для отображения баланса -->
-            <p class="text-[18px] font-semibold">{{ mainBalance }}₽</p>
+            <!-- Отображение баланса с индикатором загрузки -->
+            <div class="flex items-center gap-2">
+              <p class="text-[18px] font-semibold">{{ mainBalance }}₽</p>
+              <div v-if="isLoading" class="animate-spin rounded-full h-3 w-3 border-b-2 border-white opacity-60"></div>
+              <div v-if="error && !isLoading" class="text-red-400 text-xs">⚠</div>
+            </div>
           </div>
           <div class="rounded-[13px] bg-[#26272C] h-[41px] w-[116px] flex items-center pl-[17px] pr-[17px] justify-between">
             <!-- Иконка флага РФ -->
@@ -49,8 +53,12 @@
         <div class="w-full bg-[#1A1B20] rounded-[12px] h-[58px] mt-2 pr-[22px] pl-4 flex justify-between items-center">
           <div class="flex flex-col -space-y-[6px]">
             <p class="text-[16px] opacity-50">Стейкинг счет</p>
-            <!-- Используем переменную для отображения баланса -->
-            <p class="text-[18px] font-semibold">{{ stakingBalance }}₽</p>
+            <!-- Отображение стейкинг баланса с индикатором -->
+            <div class="flex items-center gap-2">
+              <p class="text-[18px] font-semibold">{{ stakingBalance }}₽</p>
+              <div v-if="isLoading" class="animate-spin rounded-full h-3 w-3 border-b-2 border-white opacity-60"></div>
+              <div v-if="error && !isLoading" class="text-red-400 text-xs">⚠</div>
+            </div>
           </div>
           <!-- Иконка стрелки вправо -->
           <svg viewBox="0 0 8.20972 13.835" width="8.209717" height="13.834961" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -76,7 +84,8 @@
 </template>
   
   <script setup>
-  import { ref } from 'vue';
+  import { computed } from 'vue';
+  import { useUser } from '../../composables/useUser.js';
   
   // Определяем пропсы, которые компонент может принимать
   // 'visible' - для управления видимостью диалогового окна
@@ -91,10 +100,21 @@
   // 'wallet-click' - для обработки нажатия на кнопку "Кошелек"
   defineEmits(['wallet-click']);
   
-  // Реактивные переменные для хранения значений балансов
-  // Вы можете легко привязать их к данным из вашего API
-  const mainBalance = ref(0);
-  const stakingBalance = ref(0);
+  // Интеграция пользовательских данных
+  const { balance, stakeBalance, isLoading, hasUserData, error, formattedBalances } = useUser();
+  
+  // Вычисляемые свойства для форматированного отображения балансов
+  const mainBalance = computed(() => {
+    if (isLoading.value) return '...';
+    if (!hasUserData.value) return '0.00';
+    return formattedBalances.balance.value;
+  });
+  
+  const stakingBalance = computed(() => {
+    if (isLoading.value) return '...';
+    if (!hasUserData.value) return '0.00';
+    return formattedBalances.stakeBalance.value;
+  });
   </script>
   
   <style scoped>

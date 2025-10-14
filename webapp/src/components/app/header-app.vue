@@ -1,22 +1,38 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import BalancePopup from './balance-popup.vue';
+import { useTelegramStore } from '../../stores/telegram.js';
+import { useUser } from '../../composables/useUser.js';
 
 // Инициализация роутера
 const router = useRouter();
 
+// Инициализация Telegram store
+const telegramStore = useTelegramStore();
+
+// Интеграция пользовательских данных
+const { balance, formattedBalances, isLoading, hasUserData } = useUser();
+
 // Состояние для управления видимостью попапа
 const isBalancePopupVisible = ref(false);
+
+// Инициализация Telegram WebApp при монтировании компонента
+onMounted(() => {
+  telegramStore.initialize();
+});
 
 // Функция для показа/скрытия попапа
 const toggleBalancePopup = () => {
   isBalancePopupVisible.value = !isBalancePopupVisible.value;
+  // Добавляем тактильную обратную связь
+  telegramStore.hapticFeedback('light');
 };
 
 // Обработчик клика на кнопку кошелька в попапе
 const handleWalletClick = () => {
   console.log('Переход в кошелек');
+  telegramStore.hapticFeedback('medium');
   // Здесь можно добавить логику перехода в кошелек
   isBalancePopupVisible.value = false; // Закрываем попап
 };
@@ -24,6 +40,7 @@ const handleWalletClick = () => {
 // Функция для навигации в профиль
 const navigateToProfile = () => {
   router.push('/profile');
+  telegramStore.hapticFeedback('light');
   console.log('Navigate to Profile');
 };
 </script>
@@ -117,7 +134,9 @@ const navigateToProfile = () => {
                 <path id="\u20BD" d="M11.3475 10.2702C11.5596 10.2702 11.7599 10.2302 11.9484 10.15C12.1369 10.0652 12.2972 9.95443 12.4292 9.81775C12.5659 9.67635 12.6719 9.51374 12.7473 9.32993C12.8274 9.14611 12.8675 8.95286 12.8675 8.75019C12.8675 8.54752 12.8274 8.35428 12.7473 8.17046C12.6719 7.98664 12.5659 7.82639 12.4292 7.68971C12.2972 7.54831 12.1369 7.43755 11.9484 7.35742C11.7599 7.27258 11.5596 7.23016 11.3475 7.23016L9.45981 7.23016L9.45981 10.2702L11.3475 10.2702ZM14.2391 8.75019C14.2391 9.11783 14.166 9.46661 14.0199 9.79654C13.8785 10.1218 13.6758 10.414 13.4119 10.6732C13.1527 10.9277 12.8463 11.1304 12.4928 11.2812C12.144 11.4273 11.7622 11.5004 11.3475 11.5004L9.45981 11.5004L9.45981 12.4407L12.21 12.4407L12.21 13.6708L9.45981 13.6708L9.45981 15.1202L8.08825 15.1202L8.08825 13.6708L6.99948 13.6708L6.99948 12.4407L8.08825 12.4407L8.08825 11.5004L6.99948 11.5004L6.99948 10.2702L8.08825 10.2702L8.08825 6L11.3475 6C11.7622 6 12.144 6.07541 12.4928 6.22624C12.8463 6.37235 13.1527 6.57502 13.4119 6.83425C13.6758 7.08877 13.8785 7.38334 14.0199 7.71799C14.166 8.04792 14.2391 8.39198 14.2391 8.75019Z" fill="rgb(12,13,15)" fill-rule="nonzero"></path>
               </g>
             </svg>
-            <p class="text-[18px] font-semibold leading-[15px] mt-1">0</p>
+            <p class="text-[18px] font-semibold leading-[15px] mt-1">
+              {{ isLoading ? '...' : (hasUserData ? Math.floor(parseFloat(balance) || 0) : '0') }}
+            </p>
             <button 
               @click="toggleBalancePopup"
               class="cursor-pointer" 
@@ -148,7 +167,12 @@ const navigateToProfile = () => {
         </div>
         <button @click="navigateToProfile" class="cursor-pointer">
           <div class="w-[37px] h-[37px] rounded-full border-[1px] border-[#5EFF03] shadow-[0_0_25px_rgba(94,255,3,0.25)] p-[1px] flex items-center justify-center">
-            <div class="w-full h-full bg-white border border-[#18191D] rounded-full"></div>
+            <img 
+              :src="telegramStore.userPhoto" 
+              :alt="`${telegramStore.fullName} avatar`"
+              class="w-full h-full rounded-full object-cover border border-[#18191D]"
+              @error="$event.target.src = '/img/avatar.webp'"
+            />
           </div>
         </button>
       </div>
