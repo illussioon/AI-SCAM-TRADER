@@ -22,6 +22,7 @@
       <div class="flex w-full gap-3 mb-4">
         <div
           class="flex-1 bg-[#212224] rounded-[11px] overflow-hidden px-[10px] pt-[16px] pb-2 h-[100px] relative cursor-pointer hover:bg-[#2a2a2c] transition-colors"
+          @click="selectMethod('sbp')"
         >
           <div class="flex flex-col items-start justify-between h-full">
             <div class="text-[16px] font-medium text-white">СБП</div>
@@ -29,7 +30,7 @@
           </div>
           <img
             alt="СБП"
-            class="absolute -right-3 scale-100 top-1/2 top-1/2 -translate-y-1/2 "
+            class="absolute -right-3 scale-100 top-1/2 -translate-y-1/2 "
             loading="eager"
             decoding="async"
             draggable="false"
@@ -38,14 +39,15 @@
         </div>
         <div
           class="flex-1 bg-[#212224] rounded-[11px] px-[10px] pt-[16px] pb-2 h-[100px] relative overflow-hidden cursor-pointer hover:bg-[#2a2a2c] transition-colors"
+          @click="selectMethod('card')"
         >
           <div class="flex flex-col items-start justify-between h-full">
-            <div class="text-[16px] font-medium text-white z-20 text-white">Перевод на карту</div>
+            <div class="text-[16px] font-medium text-white z-20">Перевод на карту</div>
             <div class="text-[14px] text-white/50">От 100₽</div>
           </div>
           <img
             alt="cards"
-            class="absolute scale-50 -right-10 top-12 transform -translate-y-1/2"
+            class="absolute scale-50 -right-12 top-12 transform -translate-y-1/2"
             loading="eager"
             decoding="async"
             draggable="false"
@@ -57,6 +59,7 @@
       <div class="flex w-full gap-3 mb-3">
         <div
           class="flex-1 bg-[#212224] rounded-[11px] px-[10px] pt-[16px] pb-2 h-[100px] relative overflow-hidden cursor-pointer hover:bg-[#2a2a2c] transition-colors"
+          @click="selectMethod('btc')"
         >
           <div class="flex flex-col items-start">
             <div class="text-[16px] text-white">(BTC)</div>
@@ -75,6 +78,7 @@
         </div>
         <div
           class="flex-1 bg-[#212224] rounded-[11px] px-[10px] pt-[16px] pb-2 h-[100px] relative overflow-hidden cursor-pointer hover:bg-[#2a2a2c] transition-colors"
+          @click="selectMethod('ton')"
         >
           <div class="flex flex-col items-start">
             <div class="text-[16px] text-white">(TON)</div>
@@ -95,6 +99,7 @@
       <div class="flex w-full gap-3 mb-4">
         <div
           class="flex-1 bg-[#212224] rounded-[11px] px-[10px] pt-[16px] pb-2 h-[100px] relative overflow-hidden cursor-pointer hover:bg-[#2a2a2c] transition-colors"
+          @click="selectMethod('usdt')"
         >
           <div class="flex flex-col items-start">
             <div class="text-[16px] text-white">(USDT)</div>
@@ -113,6 +118,7 @@
         </div>
         <div
           class="flex-1 bg-[#212224] rounded-[11px] px-[10px] pt-[16px] pb-2 h-[100px] relative overflow-hidden cursor-pointer hover:bg-[#2a2a2c] transition-colors"
+          @click="selectMethod('usdc')"
         >
           <div class="flex flex-col items-start">
             <div class="text-[16px] text-white">(USDC)</div>
@@ -134,5 +140,9 @@
   </template>
   
   <script setup>
-  // Здесь можно добавить логику, если нужно (например, обработчики для кликов по карточкам)
+  const emit = defineEmits(['select-deposit-method'])
+  
+  const selectMethod = (method) => {
+    emit('select-deposit-method', method)
+  }
   </script>

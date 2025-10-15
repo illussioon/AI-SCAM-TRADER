@@ -45,7 +45,10 @@
             </header>
           
           <div style="margin: 0px 13px 0 13px;" class="">
-          <PopupContentStake />
+          <PopupContentStake 
+            @invested="handleInvested"
+            @close="close"
+          />
           </div>
         </div>
         
@@ -57,6 +60,7 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
 import PopupContentStake from './popup-content-stake.vue';
+import useStake from '../../../../composables/stake.js';
 
 const props = defineProps({
   modelValue: {
@@ -64,12 +68,38 @@ const props = defineProps({
     required: true,
   },
 });
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'invested']);
+
+// Подключаем композабл стейкинга для обновления данных
+const { loadStakeStats, startProfitUpdates } = useStake();
 
 const isOpen = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 });
+
+// --- Обработчик успешного инвестирования ---
+const handleInvested = async (investmentData) => {
+  try {
+    console.log('✅ Обработка успешного инвестирования:', investmentData)
+    
+    // Обновляем данные стейкинга
+    await loadStakeStats()
+    
+    // Запускаем автообновление прибыли если это первая инвестиция
+    if (investmentData.result?.new_stake_balance > 0) {
+      startProfitUpdates()
+    }
+    
+    // Уведомляем родительский компонент
+    emit('invested', investmentData)
+    
+    console.log('🔄 Данные стейкинга обновлены после инвестирования')
+    
+  } catch (err) {
+    console.error('❌ Ошибка обновления данных после инвестирования:', err)
+  }
+}
 
 // --- Логика перетаскивания (Drag & Swipe) ---
 const drawerRef = ref(null);

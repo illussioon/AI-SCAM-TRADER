@@ -102,8 +102,8 @@
 
     <!-- Modals -->
      <div style="z-index: 9999;">
-      <DepositModal v-model="showDepositModal" />
-      <WithdrawModal v-model="showWithdrawModal" />
+      <DepositModal v-model="showDepositModal" @withdraw-method-select="handleWithdrawMethodSelect" />
+      <WithdrawModal v-model="showWithdrawModal" :selected-method="selectedWithdrawMethod" />
     </div>
   </template>
   
@@ -137,6 +137,7 @@ const {
 // --- Modal State ---
 const showDepositModal = ref(false); // Modal visibility state
 const showWithdrawModal = ref(false); // Withdrawal modal visibility state
+const selectedWithdrawMethod = ref(null); // Выбранный метод вывода
 
 // --- Computed Daily Stats ---
 const dailyGain = computed(() => {
@@ -186,6 +187,15 @@ const handleWithdrawClick = () => {
   playClickSound();
   showWithdrawModal.value = true;
   console.log('Открыть вывод средств');
+};
+
+const handleWithdrawMethodSelect = (method) => {
+  playClickSound();
+  selectedWithdrawMethod.value = method;
+  showDepositModal.value = false; // Закрываем модал депозита
+  setTimeout(() => {
+    showWithdrawModal.value = true; // Открываем модал вывода с задержкой для плавности
+  }, 300);
 };
 
 // --- Handling the image ---

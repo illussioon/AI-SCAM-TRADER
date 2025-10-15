@@ -50,7 +50,10 @@
         </div>
         
         <!-- Секция стейкинг счета -->
-        <div class="w-full bg-[#1A1B20] rounded-[12px] h-[58px] mt-2 pr-[22px] pl-4 flex justify-between items-center">
+        <div 
+          @click="navigateToCabinet"
+          class="w-full bg-[#1A1B20] rounded-[12px] h-[58px] mt-2 pr-[22px] pl-4 flex justify-between items-center cursor-pointer hover:bg-[#1F2025] transition-colors"
+        >
           <div class="flex flex-col -space-y-[6px]">
             <p class="text-[16px] opacity-50">Стейкинг счет</p>
             <!-- Отображение стейкинг баланса с индикатором -->
@@ -68,7 +71,7 @@
   
         <!-- Кнопка Кошелек -->
         <button
-          @click="$emit('wallet-click')"
+          @click="navigateToWallet"
           class="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-primary/90 h-9 px-4 py-2 has-[&gt;svg]:px-3 text-[20px] text-black font-semibold box-border border border-white/30 rounded-[12.18px] shadow-[0px_0px_25.046154022216797px_0px_rgba(94,255,3,0.25)] relative overflow-hidden bg-gradient-to-b from-[#B1F202] to-[#60FF06] mt-2 gap-x-2"
         >
           <!-- Иконка кошелька -->
@@ -85,6 +88,7 @@
   
   <script setup>
   import { computed } from 'vue';
+  import { useRouter } from 'vue-router';
   import { useUser } from '../../composables/useUser.js';
   
   // Определяем пропсы, которые компонент может принимать
@@ -97,8 +101,10 @@
   });
   
   // Определяем события, которые компонент может генерировать
-  // 'wallet-click' - для обработки нажатия на кнопку "Кошелек"
-  defineEmits(['wallet-click']);
+  const emit = defineEmits(['close']);
+  
+  // Router для навигации
+  const router = useRouter();
   
   // Интеграция пользовательских данных
   const { balance, stakeBalance, isLoading, hasUserData, error, formattedBalances } = useUser();
@@ -115,6 +121,18 @@
     if (!hasUserData.value) return '0.00';
     return formattedBalances.stakeBalance.value;
   });
+  
+  // Навигация на страницу Кошелек
+  const navigateToWallet = () => {
+    router.push('/wallet');
+    emit('close'); // Закрываем попап после навигации
+  };
+  
+  // Навигация на страницу Кабинет (Стейкинг)
+  const navigateToCabinet = () => {
+    router.push('/cabinet');
+    emit('close'); // Закрываем попап после навигации
+  };
   </script>
   
   <style scoped>

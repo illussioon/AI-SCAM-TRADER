@@ -64,7 +64,7 @@ export const useTelegramStore = defineStore('telegram', () => {
         console.warn('⚠️ Данные пользователя не найдены, используем тестовые данные')
         // Тестовые данные для разработки
         user.value = {
-          id: 123456789,
+          id: 851069605,
           first_name: 'Test',
           last_name: 'User',
           username: 'testuser',
@@ -85,7 +85,7 @@ export const useTelegramStore = defineStore('telegram', () => {
       
       // В случае ошибки используем мок данные
       user.value = {
-        id: 123456789,
+        id: 851069605,
         first_name: 'Test',
         last_name: 'User',
         username: 'testuser',

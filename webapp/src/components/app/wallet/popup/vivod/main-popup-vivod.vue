@@ -52,7 +52,7 @@
           <div style="margin: 0px 13px 0 13px;">
           </div>
           <div class="text-white" style="margin: 0px 13px 0 13px;">
-            <VivodContent />
+            <VivodContent :selected-method="selectedMethod" />
           </div>
          
         </div>
@@ -72,6 +72,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  selectedMethod: {
+    type: Object,
+    default: null
+  }
 });
 const emit = defineEmits(['update:modelValue']);
 

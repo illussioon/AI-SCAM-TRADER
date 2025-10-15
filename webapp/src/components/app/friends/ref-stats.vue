@@ -50,10 +50,23 @@
     </div>
   </template>
   
-  <script setup>
-  import { ref } from 'vue'
-  
-  const activePartners = ref(0)
-  const level1Partners = ref(0)
-  const level23Partners = ref(0)
-  </script>
+<script setup>
+import { computed, onMounted } from 'vue'
+import { useUserStore } from '../../../stores/user.js'
+
+const userStore = useUserStore()
+
+// Получаем данные из store
+const activePartners = computed(() => userStore.referralData.activePartners)
+const level1Partners = computed(() => userStore.referralData.level1Partners)
+const level23Partners = computed(() => userStore.referralData.level23Partners)
+
+// Загружаем данные при монтировании компонента
+onMounted(async () => {
+  // Если данные не инициализированы или устарели, загружаем их
+  if (!userStore.referralLastUpdated || 
+      (Date.now() - userStore.referralLastUpdated.getTime() > 60000)) { // 1 минута кеша
+    await userStore.fetchReferralData()
+  }
+})
+</script>

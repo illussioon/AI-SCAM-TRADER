@@ -5,29 +5,21 @@
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useTelegramStore } from '../stores/telegram.js'
+import { useUserStore } from '../stores/user.js'
 import { useApi } from './useApi.js'
 
 export function useStake() {
   const telegramStore = useTelegramStore()
+  const userStore = useUserStore()
   const api = useApi()
   
-  // Реактивные данные
-  const stakeData = ref({
-    currentTariff: 'TON',
-    tariffName: 'TON',
-    tariffIcon: '/icon/ton.svg',
-    stakeBalance: 0,
-    accumulatedProfit: 0,
-    dailyProfitRate: 1.7,
-    minAmount: 500,
-    maxAmount: 10000,
-    balance: 0,
-    totalProfit: 0
-  })
+  // Используем данные из пользовательского store
+  const stakeData = computed(() => userStore.stakeData)
+  const isLoading = computed(() => userStore.isStakeLoading)
+  const error = computed(() => userStore.stakeError)
   
+  // Локальные состояния для операций
   const availableTariffs = ref([])
-  const isLoading = ref(false)
-  const error = ref(null)
   const isInvesting = ref(false)
   const isCollecting = ref(false)
   
@@ -35,20 +27,9 @@ export function useStake() {
   let profitUpdateInterval = null
   const PROFIT_UPDATE_INTERVAL = 10000 // 10 секунд
   
-  // Вычисляемые свойства
-  const formattedStakeBalance = computed(() => {
-    return stakeData.value.stakeBalance.toLocaleString('ru-RU', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
-  })
-  
-  const formattedAccumulatedProfit = computed(() => {
-    return stakeData.value.accumulatedProfit.toLocaleString('ru-RU', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 6
-    })
-  })
+  // Вычисляемые свойства (берем из store или создаем дополнительные)
+  const formattedStakeBalance = computed(() => userStore.formattedStakeBalance)
+  const formattedAccumulatedProfit = computed(() => userStore.formattedAccumulatedProfit)
   
   const formattedBalance = computed(() => {
     return stakeData.value.balance.toLocaleString('ru-RU', {
@@ -57,17 +38,9 @@ export function useStake() {
     })
   })
   
-  const canInvest = computed(() => {
-    return stakeData.value.balance >= stakeData.value.minAmount
-  })
-  
-  const canCollect = computed(() => {
-    return stakeData.value.accumulatedProfit > 0
-  })
-  
-  const hasActiveStake = computed(() => {
-    return stakeData.value.stakeBalance > 0
-  })
+  const canInvest = computed(() => userStore.canInvest)
+  const canCollect = computed(() => userStore.canCollect)
+  const hasActiveStake = computed(() => userStore.hasActiveStake)
   
   const profitPercentage = computed(() => {
     if (stakeData.value.stakeBalance <= 0) return 0
@@ -80,62 +53,15 @@ export function useStake() {
   const getTelegramId = () => {
     return telegramStore.userId || 
            telegramStore.user?.id || 
-           telegramStore.initDataUnsafe?.user?.id ||
-           123456789 // Fallback для разработки
+           telegramStore.initDataUnsafe?.user?.id
   }
   
   /**
-   * Загружает статистику стейкинга
+   * Загружает статистику стейкинга (теперь через store)
    */
   const loadStakeStats = async () => {
-    try {
-      isLoading.value = true
-      error.value = null
-      
-      const telegramId = getTelegramId()
-      console.log('📊 Загрузка статистики стейкинга для пользователя:', telegramId)
-      
-      const response = await api.get(`/api/stake/stats?telegram_id=${telegramId}`)
-      
-      if (response.success && response.data) {
-        stakeData.value = {
-          currentTariff: response.data.current_tariff,
-          tariffName: response.data.tariff_name,
-          tariffIcon: response.data.tariff_icon,
-          stakeBalance: response.data.stake_balance,
-          accumulatedProfit: response.data.accumulated_profit,
-          dailyProfitRate: response.data.daily_profit_rate,
-          minAmount: response.data.min_amount,
-          maxAmount: response.data.max_amount,
-          balance: response.data.balance,
-          totalProfit: response.data.total_profit
-        }
-        
-        console.log('✅ Статистика стейкинга загружена:', stakeData.value)
-      } else {
-        throw new Error(response.message || 'Ошибка загрузки статистики')
-      }
-      
-    } catch (err) {
-      console.error('❌ Ошибка загрузки статистики стейкинга:', err)
-      error.value = err.message || 'Ошибка загрузки статистики'
-      
-      // Устанавливаем базовые значения
-      stakeData.value = {
-        currentTariff: 'TON',
-        tariffName: 'TON',
-        tariffIcon: '/icon/ton.svg',
-        stakeBalance: 0,
-        accumulatedProfit: 0,
-        dailyProfitRate: 1.7,
-        minAmount: 500,
-        maxAmount: 10000,
-        balance: 0,
-        totalProfit: 0
-      }
-    } finally {
-      isLoading.value = false
-    }
+    console.log('📊 Загрузка статистики стейкинга через store...')
+    return await userStore.fetchStakeData()
   }
   
   /**
@@ -208,9 +134,11 @@ export function useStake() {
       if (response.success) {
         console.log('✅ Инвестиция успешно создана:', response.data)
         
-        // Обновляем локальные данные
-        stakeData.value.balance = response.data.new_balance
-        stakeData.value.stakeBalance = response.data.new_stake_balance
+        // Обновляем данные в store
+        userStore.updateStakeData({
+          balance: response.data.new_balance,
+          stakeBalance: response.data.new_stake_balance
+        })
         
         // Показываем уведомление
         if (telegramStore.isInitialized) {
@@ -225,10 +153,10 @@ export function useStake() {
       
     } catch (err) {
       console.error('❌ Ошибка инвестирования:', err)
-      error.value = err.message || 'Ошибка инвестирования'
+      const errorMessage = err.message || 'Ошибка инвестирования'
       
       if (telegramStore.isInitialized) {
-        telegramStore.showAlert(error.value)
+        telegramStore.showAlert(errorMessage)
       }
       
       throw err
@@ -260,10 +188,12 @@ export function useStake() {
         
         const collectedAmount = response.data.collected_amount
         
-        // Обновляем локальные данные
-        stakeData.value.balance = response.data.new_balance
-        stakeData.value.accumulatedProfit = 0
-        stakeData.value.totalProfit = response.data.total_profit
+        // Обновляем данные в store
+        userStore.updateStakeData({
+          balance: response.data.new_balance,
+          accumulatedProfit: 0,
+          totalProfit: response.data.total_profit
+        })
         
         // Показываем уведомление
         if (telegramStore.isInitialized) {
@@ -278,10 +208,10 @@ export function useStake() {
       
     } catch (err) {
       console.error('❌ Ошибка сбора прибыли:', err)
-      error.value = err.message || 'Ошибка сбора прибыли'
+      const errorMessage = err.message || 'Ошибка сбора прибыли'
       
       if (telegramStore.isInitialized) {
-        telegramStore.showAlert(error.value)
+        telegramStore.showAlert(errorMessage)
       }
       
       throw err
@@ -311,7 +241,8 @@ export function useStake() {
     profitUpdateInterval = setInterval(async () => {
       if (hasActiveStake.value && !isLoading.value) {
         try {
-          await loadStakeStats()
+          console.log('🔄 Автообновление прибыли стейкинга...')
+          await userStore.fetchStakeData()
         } catch (err) {
           console.warn('⚠️ Ошибка автообновления прибыли:', err)
         }
@@ -357,15 +288,12 @@ export function useStake() {
     return (numAmount * stakeData.value.dailyProfitRate / 100).toFixed(6)
   }
   
-  // Инициализация при создании композабла
+  // Инициализация при создании композабла (данные уже загружаются в store)
   onMounted(async () => {
     console.log('🚀 Инициализация композабла стейкинга')
     
-    // Загружаем начальные данные
-    await Promise.all([
-      loadStakeStats(),
-      loadAvailableTariffs()
-    ])
+    // Загружаем только тарифы (данные стейка уже в store)
+    await loadAvailableTariffs()
     
     // Запускаем периодическое обновление если есть активный стейк
     if (hasActiveStake.value) {
@@ -418,3 +346,4 @@ export function useStake() {
 }
 
 export default useStake
+

@@ -246,9 +246,29 @@
         </div>
         <div class="flex flex-col justify-center items-baseline -space-y-2 translate-y-[2px]">
           <p class="text-[16px] opacity-50">Тариф</p>
-          <div class="flex items-baseline">
+          <div class="flex items-baseline gap-x-1">
             <p class="text-[21.4px]">{{ stakeData.tariffName }}</p>
             <svg
+              v-if="userStore.canUpgradeTariff"
+              viewBox="0 0 13 8"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="13"
+              height="8"
+              fill="none"
+              customFrame="#000000"
+              class="animate-pulse"
+            >
+              <path
+                id="Polygon 4"
+                d="M10.549 4.31579C11.1482 4.95436 10.6954 6 9.81976 6L3.18024 6C2.30462 6 1.85185 4.95436 2.45095 4.31579L5.77072 0.777328C6.16574 0.356275 6.83426 0.356275 7.22928 0.777328L10.549 4.31579Z"
+                fill="rgb(94,255,3)"
+                fill-rule="evenodd"
+                transform="matrix(1,0,0,-1,0,8)"
+              ></path>
+            </svg>
+            <svg
+              v-else
               viewBox="0 0 13 8"
               xmlns="http://www.w3.org/2000/svg"
               xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -266,12 +286,16 @@
               ></path>
             </svg>
           </div>
+          <!-- Показываем прогресс до следующего тарифа -->
+          <div v-if="!userStore.canUpgradeTariff && getNextTariffInfo()" class="text-[12px] opacity-40 -mt-1">
+            До {{ getNextTariffInfo().name }}: {{ formatAmount(getNextTariffInfo().needed) }}₽
+          </div>
         </div>
       </div>
       <p class="text-[16px] opacity-50 pl-[10px]">Мой баланс:</p>
       <div class="flex items-baseline pl-[10px]">
         <p class="text-[33px] font-semibold">
-          <span class="opacity-60">₽</span><span v-html="formatBalance(stakeData.balance)"></span>
+          <span class="opacity-60">₽</span><span v-html="formatBalance(stakeData.stakeBalance)"></span>
         </p>
         <div
           class="bg-[#3A5D16] -translate-y-2 ml-2 rounded-[20px] w-[68px] h-[22px] text-[16px] flex items-center justify-center text-[#86F903] pt-[2px]"
@@ -420,7 +444,10 @@
   </div>
 
   <!-- Popup для инвестирования -->
-  <PopupMainStake v-model="isStakePopupOpen" />
+  <PopupMainStake 
+    v-model="isStakePopupOpen" 
+    @invested="handleInvestmentSuccess"
+  />
 </template>
 
 <script setup>
@@ -445,6 +472,10 @@ const {
   error 
 } = useStake()
 
+// User store для дополнительной информации о тарифах
+import { useUserStore } from '../../../stores/user.js'
+const userStore = useUserStore()
+
 // Computed properties для форматирования
 const formatBalance = computed(() => {
   return (amount) => {
@@ -459,6 +490,31 @@ const formatProfit = computed(() => {
   }
 })
 
+// Функция для получения информации о следующем тарифе
+const getNextTariffInfo = () => {
+  const currentStakeBalance = stakeData.value.stakeBalance
+  
+  // Пороги тарифов (должны совпадать с серверными)
+  const tariffs = [
+    { name: 'ETH', threshold: 10000, rate: 2.1 },
+    { name: 'USDT', threshold: 100000, rate: 2.7 }
+  ]
+  
+  // Находим ближайший следующий тариф
+  for (const tariff of tariffs) {
+    if (currentStakeBalance < tariff.threshold) {
+      return {
+        name: tariff.name,
+        needed: tariff.threshold - currentStakeBalance,
+        threshold: tariff.threshold,
+        rate: tariff.rate
+      }
+    }
+  }
+  
+  return null // Уже максимальный тариф
+}
+
 // Функция для открытия popup
 const openStakePopup = () => {
   isStakePopupOpen.value = true
@@ -471,12 +527,28 @@ const handleCollectProfit = async () => {
   try {
     console.log('🏦 Сбор прибыли со стейкинга')
     await collectProfit()
-    
-    // Обновляем данные после сбора
-    await loadStakeStats()
+    // Данные обновляются автоматически через store в композабле
     
   } catch (err) {
     console.error('❌ Ошибка сбора прибыли:', err)
+  }
+}
+
+// Обработчик успешного инвестирования
+const handleInvestmentSuccess = async (investmentData) => {
+  try {
+    console.log('🎉 Обработка успешного инвестирования в stake.vue:', investmentData)
+    
+    // Данные уже обновлены через store в композабле
+    // Запускаем автообновление прибыли если есть активный стейк
+    if (stakeData.value.stakeBalance > 0) {
+      startProfitUpdates()
+    }
+    
+    console.log('✅ Инвестирование обработано в главном компоненте')
+    
+  } catch (err) {
+    console.error('❌ Ошибка обработки инвестирования в главном компоненте:', err)
   }
 }
 
@@ -484,15 +556,9 @@ const handleCollectProfit = async () => {
 onMounted(async () => {
   console.log('🚀 Инициализация компонента stake.vue')
   
-  try {
-    await loadStakeStats()
-    
-    // Запускаем автообновление если есть активный стейк
-    if (stakeData.value.stakeBalance > 0) {
-      startProfitUpdates()
-    }
-  } catch (err) {
-    console.error('❌ Ошибка инициализации stake.vue:', err)
+  // Данные уже загружены через store, просто запускаем автообновление если нужно
+  if (stakeData.value.stakeBalance > 0) {
+    startProfitUpdates()
   }
 })
 

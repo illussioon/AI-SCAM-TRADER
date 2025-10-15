@@ -135,12 +135,16 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted, watch } from 'vue'
   
   const props = defineProps({
     id: {
       type: String,
       default: 'select-1'
+    },
+    selectedMethod: {
+      type: Object,
+      default: null
     }
   })
   
@@ -224,4 +228,13 @@
     // Add withdrawal logic here
     console.log('Withdrawing:', { method: selectedMethod.value, cardNumber: cardNumber.value, amount: amount.value })
   }
+  
+  // Устанавливаем выбранный метод при получении пропа
+  watch(() => props.selectedMethod, (newMethod) => {
+    if (newMethod && newMethod.name) {
+      selectedMethod.value = newMethod.name
+      selectedIcon.value = newMethod.icon
+      cardNumber.value = '' // Очищаем поле при смене метода
+    }
+  }, { immediate: true })
   </script>

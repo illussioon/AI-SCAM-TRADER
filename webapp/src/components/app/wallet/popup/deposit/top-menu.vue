@@ -1,7 +1,8 @@
-<template>
+  <template>
     <div>
-      <!-- Tab list container -->
+      <!-- Tab list container - скрыт когда показываем форму банковского депозита -->
       <div 
+        v-if="!showBankDeposit"
         role="tablist" 
         aria-orientation="horizontal" 
         data-slot="tabs-list" 
@@ -32,44 +33,60 @@
   
       <!-- Tab panels container -->
       <div class="mt-4">
-        <!-- This part is responsible for outputting the deposit section -->
-        <div 
-          v-show="currentTab === 'deposit'" 
-          role="tabpanel" 
-          :id="`tab-content-deposit`"
-          class=""
-        >
-         <Deposit />
+        <!-- Bank Deposit Form - показываем когда showBankDeposit = true -->
+        <div v-if="showBankDeposit">
+          <BankDep />
         </div>
-  
-        <!-- This part is responsible for outputting the withdrawal section -->
-        <div 
-          v-show="currentTab === 'withdrawal'" 
-          role="tabpanel" 
-          :id="`tab-content-withdrawal`"
-          class=""
-        >
-          <Witdraft />
-        </div>
-  
-        <!-- This part is responsible for outputting the history section -->
-        <div 
-          v-show="currentTab === 'history'" 
-          role="tabpanel" 
-          :id="`tab-content-history`"
-          class=""
-        >
-        <History />
-        </div>
+
+        <!-- Normal tabs content - показываем когда showBankDeposit = false -->
+        <template v-else>
+          <!-- This part is responsible for outputting the deposit section -->
+          <div 
+            v-show="currentTab === 'deposit'" 
+            role="tabpanel" 
+            :id="`tab-content-deposit`"
+            class=""
+          >
+           <Deposit @select-deposit-method="handleDepositMethodSelect" />
+          </div>
+
+          <!-- This part is responsible for outputting the withdrawal section -->
+          <div 
+            v-show="currentTab === 'withdrawal'" 
+            role="tabpanel" 
+            :id="`tab-content-withdrawal`"
+            class=""
+          >
+            <Witdraft @select="handleWithdrawMethodSelect" />
+          </div>
+
+          <!-- This part is responsible for outputting the history section -->
+          <div 
+            v-show="currentTab === 'history'" 
+            role="tabpanel" 
+            :id="`tab-content-history`"
+            class=""
+          >
+          <History />
+          </div>
+        </template>
       </div>
     </div>
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, watch } from 'vue'
   import Witdraft from './withdrawal.vue'
   import History from './history.vue'
   import Deposit from './dep.vue'
+  import BankDep from './bank-dep.vue'
+  
+  const props = defineProps({
+    showBankDeposit: {
+      type: Boolean,
+      default: false
+    }
+  })
   
   const currentTab = ref('deposit')
   
@@ -78,4 +95,21 @@
     { name: 'withdrawal', label: 'Вывод' },
     { name: 'history', label: 'История' }
   ]
+  
+  const emit = defineEmits(['withdraw-method-select', 'close', 'show-bank-deposit'])
+  
+  const handleWithdrawMethodSelect = (method) => {
+    emit('withdraw-method-select', method)
+  }
+  
+  const handleDepositMethodSelect = (method) => {
+    emit('show-bank-deposit', true)
+  }
+  
+  // Сбрасываем состояние при переключении вкладок
+  watch(currentTab, (newTab) => {
+    if (newTab !== 'deposit') {
+      emit('show-bank-deposit', false)
+    }
+  })
   </script>

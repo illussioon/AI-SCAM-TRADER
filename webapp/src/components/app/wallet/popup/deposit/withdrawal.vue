@@ -32,7 +32,7 @@
           </div>
           <img
             alt="cards"
-            class="absolute scale-50 -right-10 top-12 transform -translate-y-1/2"
+            class="absolute scale-50 -right-12 top-12 transform -translate-y-1/2"
             loading="eager"
             decoding="async"
             draggable="false"
@@ -129,7 +129,27 @@
   <script setup>
   const emit = defineEmits(['select'])
   
+  const methodsMap = {
+    'card': {
+      name: 'Банковская карта',
+      icon: '/icon/card.svg'
+    },
+    'sbp': {
+      name: 'СБП',
+      icon: '/icon/sbp2.svg'
+    },
+    'usdt': {
+      name: 'Tether',
+      icon: '/icon/teher.webp'
+    },
+    'ton': {
+      name: 'Toncoin',
+      icon: '/icon/ton.svg'
+    }
+  }
+  
   const select = (method) => {
-    emit('select', method)
+    const selectedMethod = methodsMap[method]
+    emit('select', selectedMethod)
   }
   </script>

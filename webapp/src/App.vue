@@ -1,14 +1,19 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import LoadingVue from './loading.vue'
+import CustomNotifyPopup from './components/app/custom-notify-popup.vue'
 import { useTelegramStore } from './stores/telegram.js'
 import { useUserStore } from './stores/user.js'
+import { usePersistentNotifications } from './composables/usePersistentNotifications'
 
 const isLoading = ref(true)
 
 // Stores
 const telegramStore = useTelegramStore()
 const userStore = useUserStore()
+
+// Система уведомлений
+const { checkPendingNotifications } = usePersistentNotifications()
 
 onMounted(async () => {
   try {
@@ -23,7 +28,10 @@ onMounted(async () => {
     // 3. Инициализируем пользовательские данные
     await userStore.initialize()
     
-    // 4. Показываем загрузку еще минимум 2 секунды для плавности
+    // 4. Проверяем pending уведомления
+    await checkPendingNotifications()
+    
+    // 5. Показываем загрузку еще минимум 2 секунды для плавности
     setTimeout(() => {
       isLoading.value = false
       console.log('✅ Приложение инициализировано')
@@ -50,6 +58,9 @@ onUnmounted(() => {
   <div class="app">
     <LoadingVue v-if="isLoading" />
     <router-view v-else />
+    
+    <!-- Система уведомлений - показывается всегда поверх всего контента -->
+    <CustomNotifyPopup />
   </div>
 </template>
 

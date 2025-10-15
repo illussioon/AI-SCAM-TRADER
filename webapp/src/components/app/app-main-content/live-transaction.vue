@@ -1,16 +1,106 @@
 <template>
     <section class="mt-5">
+      <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-[9px] h-[9px] rounded-full bg-[#90F705] shadow-[0_0_20px_4px_#5EFF0366,0_0_0_4px_rgba(144,247,5,0.1)] waving-glow"></div>
+          <div 
+            class="w-[9px] h-[9px] rounded-full shadow-[0_0_20px_4px_#5EFF0366,0_0_0_4px_rgba(144,247,5,0.1)]"
+            :class="[
+              isLoading ? 'bg-yellow-500 pulse' : 
+              error ? 'bg-red-500' : 
+              isDataStale ? 'bg-orange-500' : 
+              'bg-[#90F705] waving-glow'
+            ]"
+          ></div>
         <h2 class="font-semibold text-xl">Live транзакции:</h2>
+
+        </div>
+        
+        <!-- Кнопка обновления и статус -->
+        <div class="flex items-center gap-2">
+          <div v-if="lastUpdateFormatted" class="text-xs text-white/40">
+            {{ lastUpdateFormatted }}
+          </div>
+          
+          <button 
+            @click="handleRefresh"
+            :disabled="isLoading"
+            class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50"
+            title="Обновить транзакции"
+          >
+            <svg 
+              class="w-4 h-4 transition-transform"
+              :class="{ 'animate-spin': isLoading }"
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
       
       <div class="mt-3 space-y-2">
-        <div class="space-y-2" style="position: relative; opacity: 1; filter: blur(0px);">
+        <!-- Состояние загрузки -->
+        <div v-if="isLoading && transactions.length === 0" class="space-y-2">
+          <div 
+            v-for="i in 4" 
+            :key="`skeleton-${i}`"
+            class="flex items-center gap-3 rounded-xl bg-gradient-to-b from-[#1A1C20]/80 to-[#0F1013]/40 p-2 h-[52px] animate-pulse"
+          >
+            <div class="relative">
+              <div class="w-[35px] h-[35px] rounded-full bg-white/10"></div>
+              <div class="absolute -bottom-1 left-0 w-8 h-4 bg-white/10 rounded-md"></div>
+            </div>
+            <div class="flex-1">
+              <div class="w-20 h-4 bg-white/10 rounded mb-1"></div>
+              <div class="w-16 h-3 bg-white/10 rounded"></div>
+            </div>
+            <div class="text-right">
+              <div class="w-12 h-3 bg-white/10 rounded mb-1"></div>
+              <div class="w-16 h-4 bg-white/10 rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ошибка загрузки -->
+        <div v-else-if="error" class="flex flex-col items-center justify-center py-8 text-center">
+          <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-3">
+            <svg class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0l-5.898 8.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <p class="text-white/60 mb-2">Ошибка загрузки транзакций</p>
+          <p class="text-sm text-white/40 mb-4">{{ error }}</p>
+          <button 
+            @click="handleRefresh"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+          >
+            Попробовать снова
+          </button>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div v-else-if="transactions.length === 0" class="flex flex-col items-center justify-center py-8 text-center">
+          <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3">
+            <svg class="w-6 h-6 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <p class="text-white/60 mb-2">Пока нет транзакций</p>
+          <p class="text-sm text-white/40">Транзакции будут отображаться здесь в реальном времени</p>
+        </div>
+
+        <!-- Список транзакций -->
+        <div 
+          v-else 
+          class="space-y-2 transition-opacity duration-300"
+          :class="{ 'opacity-60': isLoading }"
+        >
           <div 
             v-for="transaction in transactions" 
             :key="transaction.id"
-            class="flex items-center gap-3 rounded-xl bg-gradient-to-b from-[#1A1C20]/80 to-[#0F1013]/40 p-2 h-[52px]"
+            class="flex items-center gap-3 rounded-xl bg-gradient-to-b from-[#1A1C20]/80 to-[#0F1013]/40 p-2 h-[52px] hover:from-[#1A1C20] hover:to-[#0F1013] transition-all duration-200"
           >
             <div class="relative">
               <div class="w-full h-full rounded-full border-2" :style="{ borderColor: transaction.borderColor }">
@@ -26,9 +116,17 @@
                 :style="{ backgroundColor: transaction.borderColor }"
               >
                 <img 
+                  v-if="transaction.cryptoIcon.startsWith('data:')" 
                   :alt="transaction.cryptoName" 
                   class="block w-[10px]" 
                   :src="transaction.cryptoIcon"
+                >
+                <img 
+                  v-else
+                  :alt="transaction.cryptoName" 
+                  class="block w-[10px]" 
+                  :src="transaction.cryptoIcon"
+                  @error="$event.target.style.display = 'none'"
                 >
                 <p class="leading-none mt-[2px]">{{ transaction.cryptoName }}</p>
               </div>
@@ -62,59 +160,49 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
+import { useTransactions } from '@/composables/useTransactions';
+
+// Используем composable для транзакций
+const {
+  liveTransactions: transactions,
+  isLoading,
+  error,
+  transactionCount,
+  lastUpdateFormatted,
+  isDataStale,
+  startAutoRefresh,
+  stopAutoRefresh,
+  fetchLiveTransactions
+} = useTransactions();
+
+// При монтировании компонента запускаем автообновление
+onMounted(() => {
+  console.log('🚀 Инициализация live транзакций...');
   
-  const transactions = ref([
-    {
-      id: '140213313',
-      type: 'deposit',
-      typeText: 'Пополнение',
-      borderColor: 'rgb(0, 176, 219)',
-      cryptoName: 'TON',
-      cryptoClass: '',
-      cryptoIcon: "data:image/svg+xml,%3csvg%20viewBox='0%200%207.78821%205.84106'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20width='7.788208'%20height='5.841064'%20fill='none'%3e%3crect%20id='token:ton'%20width='7.788235'%20height='5.841177'%20x='0.000000'%20y='0.000000'%20fill='rgb(255,255,255)'%20fill-opacity='0'%20/%3e%3cpath%20id='Vector'%20d='M6.70468%201.36934L4.15858%205.42377C4.12743%205.47287%204.08435%205.51327%204.03335%205.54121C3.98235%205.56914%203.9251%205.58369%203.86696%205.5835C3.80881%205.5833%203.75166%205.56837%203.70085%205.5401C3.65004%205.51182%203.60723%205.47113%203.57641%205.42182L1.07996%201.36739C1.00989%201.2539%200.973013%201.12305%200.973516%200.989665C0.976506%200.792625%201.05764%200.604841%201.19906%200.467612C1.34049%200.330383%201.53064%200.254947%201.72768%200.257896L6.06378%200.257896C6.47818%200.257571%206.81469%200.584028%206.81469%200.987718C6.81469%201.12174%206.77705%201.25414%206.70468%201.36934ZM1.69328%201.23305L3.55045%204.09717L3.55045%200.944883L1.88734%200.944883C1.69523%200.944883%201.60923%201.07209%201.69328%201.2337M4.23744%204.09782L6.09525%201.23305C6.18125%201.07177%206.09331%200.944234%205.90087%200.944234L4.23808%200.944234L4.23744%204.09782Z'%20fill='rgb(255,255,255)'%20fill-rule='nonzero'%20/%3e%3c/svg%3e",
-      time: '18:39:39',
-      amount: '+920₽'
-    },
-    {
-      id: '140213313-2',
-      type: 'deposit',
-      typeText: 'Пополнение',
-      borderColor: 'rgb(17, 192, 167)',
-      cryptoName: 'ETH',
-      cryptoClass: '',
-      cryptoIcon: "data:image/svg+xml,%3csvg%20viewBox='0%200%205.21692%208.34521'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20width='5.216919'%20height='8.345215'%20fill='none'%20customFrame='%23000000'%3e%3cg%20id='Group'%3e%3cpath%20id='Vector'%20d='M2.60767%200L2.60767%203.08493L5.21508%204.25004L2.60767%200Z'%20fill='rgb(255,255,255)'%20fill-opacity='0.601999998'%20fill-rule='nonzero'%20/%3e%3cpath%20id='Vector'%20d='M2.60776%200L0%204.25004L2.60776%203.08493L2.60776%200Z'%20fill='rgb(255,255,255)'%20fill-rule='nonzero'%20/%3e%3cpath%20id='Vector'%20d='M2.60767%206.24895L2.60767%208.34511L5.21682%204.73535L2.60767%206.24895Z'%20fill='rgb(255,255,255)'%20fill-opacity='0.601999998'%20fill-rule='nonzero'%20/%3e%3cpath%20id='Vector'%20d='M2.60776%208.34511L2.60776%206.2486L0%204.73535L2.60776%208.34511Z'%20fill='rgb(255,255,255)'%20fill-rule='nonzero'%20/%3e%3cpath%20id='Vector'%20d='M2.60767%205.76406L5.21508%204.25011L2.60767%203.08569L2.60767%205.76406Z'%20fill='rgb(255,255,255)'%20fill-opacity='0.200000003'%20fill-rule='nonzero'%20/%3e%3cpath%20id='Vector'%20d='M0%204.25011L2.60776%205.76406L2.60776%203.08569L0%204.25011Z'%20fill='rgb(255,255,255)'%20fill-opacity='0.601999998'%20fill-rule='nonzero'%20/%3e%3c/g%3e%3c/svg%3e",
-      time: '18:39:39',
-      amount: '+920₽'
-    },
-    {
-      id: '140213313-3',
-      type: 'deposit',
-      typeText: 'Пополнение',
-      borderColor: 'rgb(115, 93, 237)',
-      cryptoName: 'USDT',
-      cryptoClass: '-left-1',
-      cryptoIcon: "data:image/svg+xml,%3csvg%20viewBox='0%200%2010.3334%2010.3333'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20width='10.333374'%20height='10.333252'%20fill='none'%3e%3crect%20id='cryptocurrency-color:usdt'%20width='10.333333'%20height='10.333333'%20x='0.000000'%20y='0.000244'%20fill='rgb(255,255,255)'%20fill-opacity='0'%20/%3e%3cg%20id='Group'%3e%3cpath%20id='Vector'%20d='M5.78724%205.61352L5.78724%205.61288C5.75172%205.61546%205.56862%205.62644%205.16013%205.62644C4.83399%205.62644%204.6044%205.61675%204.52367%205.61288L4.52367%205.61384C3.26817%205.55863%202.33106%205.34001%202.33106%205.07845C2.33106%204.81689%203.26817%204.59859%204.52367%204.54241L4.52367%205.3962C4.60569%205.40201%204.84077%205.4159%205.16562%205.4159C5.55538%205.4159%205.75075%205.39975%205.78724%205.39652L5.78724%204.54305C7.04016%204.59892%207.975%204.81753%207.975%205.07845C7.975%205.34001%207.04016%205.55798%205.78724%205.61352ZM5.78724%204.45425L5.78724%203.69023L7.53551%203.69023L7.53551%202.52515L2.7754%202.52515L2.7754%203.69023L4.52367%203.69023L4.52367%204.45393C3.10283%204.51916%202.0343%204.80074%202.0343%205.13787C2.0343%205.47499%203.10283%205.75625%204.52367%205.8218L4.52367%208.27016L5.78724%208.27016L5.78724%205.82116C7.20581%205.75593%208.27176%205.47467%208.27176%205.13787C8.27176%204.80106%207.20581%204.5198%205.78724%204.45425Z'%20fill='rgb(255,255,255)'%20fill-rule='evenodd'%20/%3e%3c/g%3e%3c/svg%3e",
-      time: '18:39:39',
-      amount: '+920₽'
-    },
-    {
-      id: '140213314',
-      type: 'withdrawal',
-      typeText: 'Вывод средств',
-      borderColor: 'rgb(61, 217, 255)',
-      cryptoName: 'TON',
-      cryptoClass: '',
-      cryptoIcon: "data:image/svg+xml,%3csvg%20viewBox='0%200%207.78821%205.84106'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%20width='7.788208'%20height='5.841064'%20fill='none'%3e%3crect%20id='token:ton'%20width='7.788235'%20height='5.841177'%20x='0.000000'%20y='0.000000'%20fill='rgb(255,255,255)'%20fill-opacity='0'%20/%3e%3cpath%20id='Vector'%20d='M6.70468%201.36934L4.15858%205.42377C4.12743%205.47287%204.08435%205.51327%204.03335%205.54121C3.98235%205.56914%203.9251%205.58369%203.86696%205.5835C3.80881%205.5833%203.75166%205.56837%203.70085%205.5401C3.65004%205.51182%203.60723%205.47113%203.57641%205.42182L1.07996%201.36739C1.00989%201.2539%200.973013%201.12305%200.973516%200.989665C0.976506%200.792625%201.05764%200.604841%201.19906%200.467612C1.34049%200.330383%201.53064%200.254947%201.72768%200.257896L6.06378%200.257896C6.47818%200.257571%206.81469%200.584028%206.81469%200.987718C6.81469%201.12174%206.77705%201.25414%206.70468%201.36934ZM1.69328%201.23305L3.55045%204.09717L3.55045%200.944883L1.88734%200.944883C1.69523%200.944883%201.60923%201.07209%201.69328%201.2337M4.23744%204.09782L6.09525%201.23305C6.18125%201.07177%206.09331%200.944234%205.90087%200.944234L4.23808%200.944234L4.23744%204.09782Z'%20fill='rgb(255,255,255)'%20fill-rule='nonzero'%20/%3e%3c/svg%3e",
-      time: '18:39:39',
-      amount: '-920₽'
-    }
-  ]);
+  // Запускаем автообновление каждые 10 секунд
+  startAutoRefresh(10000);
+});
+
+// При размонтировании останавливаем автообновление
+onUnmounted(() => {
+  console.log('🛑 Останавливаем автообновление live транзакций');
+  stopAutoRefresh();
+});
+
+// Ручное обновление транзакций
+const handleRefresh = () => {
+  fetchLiveTransactions();
+};
   </script>
   
   <style scoped>
   .waving-glow {
     animation: wave-glow 2s ease-in-out infinite;
+  }
+  
+  .pulse {
+    animation: pulse 1.5s ease-in-out infinite;
   }
   
   @keyframes wave-glow {
@@ -124,5 +212,35 @@
     50% {
       box-shadow: 0 0 30px 6px #5EFF0388, 0 0 0 6px rgba(144, 247, 5, 0.2);
     }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 20px 4px rgba(234, 179, 8, 0.4), 0 0 0 4px rgba(234, 179, 8, 0.1);
+    }
+    50% {
+      opacity: 0.7;
+      box-shadow: 0 0 30px 6px rgba(234, 179, 8, 0.6), 0 0 0 6px rgba(234, 179, 8, 0.2);
+    }
+  }
+  
+  /* Плавная анимация появления новых транзакций */
+  .transaction-enter-active {
+    transition: all 0.3s ease-out;
+  }
+  
+  .transaction-enter-from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  
+  .transaction-leave-active {
+    transition: all 0.3s ease-in;
+  }
+  
+  .transaction-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
   }
   </style>

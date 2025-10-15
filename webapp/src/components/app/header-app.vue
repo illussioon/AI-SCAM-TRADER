@@ -29,11 +29,9 @@ const toggleBalancePopup = () => {
   telegramStore.hapticFeedback('light');
 };
 
-// Обработчик клика на кнопку кошелька в попапе
-const handleWalletClick = () => {
-  console.log('Переход в кошелек');
+// Обработчик закрытия попапа баланса
+const handlePopupClose = () => {
   telegramStore.hapticFeedback('medium');
-  // Здесь можно добавить логику перехода в кошелек
   isBalancePopupVisible.value = false; // Закрываем попап
 };
 
@@ -187,7 +185,7 @@ const navigateToProfile = () => {
     
     <BalancePopup 
       :visible="isBalancePopupVisible" 
-      @wallet-click="handleWalletClick"
+      @close="handlePopupClose"
       @click.stop
       id="balance-popup"
     />

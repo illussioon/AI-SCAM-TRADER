@@ -12,7 +12,7 @@
         >
         <div class="flex flex-col ml-[6px] -space-y-2 mt-2">
           <p class="text-[13px] opacity-50 text-gray-400">Ваш тариф:</p>
-          <p class="text-[19px] font-medium text-white">{{ stakeData.tariffName }}</p>
+          <p class="text-[19px] font-medium text-white">{{ planName }}</p>
         </div>
       </div>
   
@@ -42,26 +42,35 @@
         </svg>
         <div class="flex flex-col ml-2 -space-y-2 mt-2">
           <p class="text-[13px] opacity-50 text-gray-400">Доходность</p>
-          <p class="text-[19px] font-medium text-white">+ {{ stakeData.dailyProfitRate }}% за 24 часа</p>
+          <p class="text-[19px] font-medium text-white">+ {{ profitability }}% за 24 часа</p>
         </div>
       </div>
   
       <!-- Input Section -->
-      <p class="text-[16px] text-[#747474] mt-3">Минимальная сумма {{ stakeData.minAmount }}</p>
-      <input 
-        v-model="amount"
-        class="file:text-foreground placegolder: text-white placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-[#27282A] border-input flex h-[47px] w-full min-w-0 placeholder:font-normal rounded-[17px] bg-transparent px-3 pt-1 text-[17px] font-semibold transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive placeholder:text-[20px]" 
-        placeholder="Введите сумму" 
-        inputmode="numeric" 
-        type="text"
-        @input="handleInput"
-      >
+      <div class="mt-3">
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-[16px] text-[#747474]">Минимальная сумма {{ formatAmount(minAmount) }} ₽</p>
+          <p class="text-[14px] text-[#747474]">Доступно: {{ formatAmount(availableBalance) }} ₽</p>
+        </div>
+        <input 
+          v-model="amount"
+          class="file:text-foreground placeholder:gray-400 text-white selection:bg-primary selection:text-primary-foreground dark:bg-[#27282A] border-input flex h-[47px] w-full min-w-0 placeholder:font-normal rounded-[17px] bg-transparent px-3 pt-1 text-[17px] font-semibold transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive placeholder:text-[20px]" 
+          placeholder="Введите сумму" 
+          inputmode="numeric" 
+          type="text"
+          :class="{ 'border-red-500': amountError }"
+        >
+        <p v-if="amountError" class="text-red-400 text-[14px] mt-1">{{ amountError }}</p>
+        <p v-if="numericAmount > 0" class="text-[#747474] text-[14px] mt-1">
+          Прибыль в день: ~{{ formatAmount((numericAmount * profitability / 100)) }} ₽ (+{{ profitability }}%)
+        </p>
+      </div>
     </div>
   
     <!-- Footer Button -->
     <div class="flex flex-col gap-2 mb-[200px] mt-5">
       <button 
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-[#6DD420] hover:bg-[#5DB317] px-4 py-2 w-full mx-auto h-[48px] text-[18px] font-semibold text-black"
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive box-border border border-white/30 rounded-[10px] backdrop-blur-[181.9px] bg-gradient-to-b from-[#B3F106] to-[#5EFF03] px-4 py-2 has-[>svg]:px-3 w-full mx-auto h-[48px] text-[18px] font-semibold text-black"
         :disabled="isButtonDisabled || isInvesting"
         @click="handleInvest"
       >
@@ -71,80 +80,116 @@
     </div>
   </template>
   
-<script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import useStake from '../../../../composables/stake.js'
-// Composable для стейкинга
-const { 
-  stakeData, 
-  isInvesting, 
-  investInStake,
-  loadStakeStats,
-  error 
-} = useStake()
-
-// Reactive data
-const amount = ref('')
-
-// Computed properties
-const iconUrl = computed(() => stakeData.value.tariffIcon)
-
-const isButtonDisabled = computed(() => {
-  const numAmount = parseFloat(amount.value)
-  return !amount.value || 
-         isNaN(numAmount) || 
-         numAmount < stakeData.value.minAmount ||
-         numAmount > stakeData.value.maxAmount ||
-         numAmount > stakeData.value.balance
-})
-
-// Methods
-const handleInput = (event) => {
-  // Разрешаем только цифры и одну точку
-  let value = event.target.value
-  // Удаляем все символы кроме цифр и точки
-  value = value.replace(/[^0-9.]/g, '')
-  // Разрешаем только одну точку
-  const dotCount = (value.match(/\./g) || []).length
-  if (dotCount > 1) {
-    value = value.substring(0, value.lastIndexOf('.'))
-  }
-  // Обновляем значение
-  amount.value = value
-  event.target.value = value
-}
-
-const handleInvest = async () => {
-  if (isButtonDisabled.value || isInvesting.value) return
+  <script setup>
+  import { ref, computed, watch, onMounted } from 'vue'
+  import useStake from '../../../../composables/stake.js'
   
-  try {
-    console.log('💰 Инвестирование суммы:', amount.value)
-    await investInStake(amount.value)
+  // Получаем доступ к стейк композаблу
+  const { 
+    stakeData, 
+    isInvesting, 
+    investInStake, 
+    loadStakeStats,
+    formatAmount,
+    error 
+  } = useStake()
+  
+  // Эмиты для взаимодействия с родительским компонентом
+  const emit = defineEmits(['invested', 'close'])
+  
+  // Reactive data
+  const amount = ref('')
+  
+  // Computed properties для данных из стейка
+  const iconUrl = computed(() => stakeData.value.tariffIcon || '/icon/ton.svg')
+  const planName = computed(() => stakeData.value.tariffName || 'TON')
+  const profitability = computed(() => stakeData.value.dailyProfitRate || '0')
+  const minAmount = computed(() => stakeData.value.minAmount || 100)
+  const maxAmount = computed(() => stakeData.value.maxAmount || 10000)
+  const availableBalance = computed(() => stakeData.value.balance || 0)
+  
+  // Computed properties для валидации
+  const numericAmount = computed(() => {
+    const num = parseFloat(amount.value)
+    return isNaN(num) ? 0 : num
+  })
+  
+  const isButtonDisabled = computed(() => {
+    return !amount.value || 
+           numericAmount.value < minAmount.value || 
+           numericAmount.value > maxAmount.value ||
+           numericAmount.value > availableBalance.value ||
+           isInvesting.value
+  })
+  
+  const amountError = computed(() => {
+    if (!amount.value) return ''
     
-    // Очищаем поле после успешной инвестиции
-    amount.value = ''
+    if (numericAmount.value < minAmount.value) {
+      return `Минимальная сумма: ${formatAmount(minAmount.value)} ₽`
+    }
     
-  } catch (err) {
-    console.error('❌ Ошибка инвестирования:', err)
+    if (numericAmount.value > maxAmount.value) {
+      return `Максимальная сумма: ${formatAmount(maxAmount.value)} ₽`
+    }
+    
+    if (numericAmount.value > availableBalance.value) {
+      return `Недостаточно средств. Доступно: ${formatAmount(availableBalance.value)} ₽`
+    }
+    
+    return ''
+  })
+  
+  // Methods
+  const handleInvest = async () => {
+    if (isButtonDisabled.value) return
+    
+    try {
+      console.log('🚀 Начало инвестирования:', numericAmount.value)
+      
+      const result = await investInStake(numericAmount.value)
+      
+      console.log('✅ Инвестирование успешно завершено:', result)
+      
+      // Уведомляем родительский компонент об успешном инвестировании
+      emit('invested', {
+        amount: numericAmount.value,
+        result: result
+      })
+      
+      // Закрываем попап
+      emit('close')
+      
+      // Очищаем поле ввода
+      amount.value = ''
+      
+    } catch (err) {
+      console.error('❌ Ошибка инвестирования:', err)
+      // Ошибка уже обрабатывается в композабле
+    }
   }
-}
-
-// Загружаем данные при монтировании
-onMounted(async () => {
-  try {
+  
+  // Инициализация при монтировании
+  onMounted(async () => {
+    console.log('🔄 Инициализация popup-content-stake...')
     await loadStakeStats()
-  } catch (err) {
-    console.error('❌ Ошибка загрузки данных стейкинга:', err)
-  }
-})
-
-// Следим за ошибками
-watch(error, (newError) => {
-  if (newError) {
-    console.error('❌ Ошибка стейкинга:', newError)
-  }
-})
-</script>
+  })
+  
+  // Автоматическое форматирование ввода
+  watch(amount, (newValue) => {
+    // Удаляем все символы кроме цифр и точки
+    const cleaned = newValue.replace(/[^\d.]/g, '')
+    
+    // Проверяем на корректность десятичного числа
+    const parts = cleaned.split('.')
+    if (parts.length > 2) {
+      // Больше одной точки - оставляем только первую
+      amount.value = parts[0] + '.' + parts.slice(1).join('')
+    } else if (cleaned !== newValue) {
+      amount.value = cleaned
+    }
+  })
+  </script>
   
   <style scoped>
   /* Дополнительные стили, если нужны */

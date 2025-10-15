@@ -116,50 +116,79 @@
           <div class="flex items-center gap-x-2">
             <img
               class="h-7 w-7"
-              alt="TON"
-              src="data:image/webp;base64,UklGRk4EAABXRUJQVlA4TEEEAAAvj8AjEGfBuG0bSTTmNf13OLO7RZxugyDbpv5UO9kZt23kSJrn9t9pvmjWkWSb2stn+++m/MJ7MdhGAPr8q45Vx97A1VQfklD7faQwKxyTUOMDqaO0UCuKwiVnkKAFJmjAUQueSgghOYsJVciIBRrwX6VUEI81xIXqdd5bWyfKsjPItm23bSNFcu/dcpeMFJf8/wdOLInGBTGvQET/Ibht5EiSt+EN19uXe2YqPCCB6t4dLp/54ViUV3Iri+Mhfy6H3XsSo26Txf5CwbrsbXKLicdkdSIG2WryiILPcU6MsvGndKZbYpdNBfP1WxBEhX3J5GdDQG1MHv09gbU3WfRyEiDryaG9JiFamxDmVxIjm4v48zmQKB0MzoLEybB8n0mgzgZkREI1grEisTLQkcyOBGt3A9A5kmhZh51BScJlA+7jGY9AxsqMotCMd0Ry435VjxcHHpGMZ9UyJoxj0duRopLd3mdHkWnHsFdGJ0MeScR4lPFNUcre4RwnZ/xBcTyHzj8erSyUQ7wcQs/vKGLNw85+rzFj7RDWFLXWIZcqKHL1msljx5qvK3n0sib28bMP/xesxD/jjQZs6q/YkgqyOn51wOoodKDgO9GL8DRwy0vLMkaZMYc0qqEZ3nvpB7cy4tTnK2PeewB5i5Ex+5bZ+gCpxb15PpyPDxQp8enxx4SPrAa5EyYvp8LsnobI3hbzSfKJ+/Xsje9Q2N8d98unxOxG3Dgr3mL/4FtiE9k44oUFOxkvGTuLxPb87yWbfWIXRtLKF8VJxj7NL8mdnH9baDGC2DvvXXJ+82AkuHt3SKyqWigi3IdLXrKKhSLCffn0fwJM4SGDuD/zfyCm8JBChucHwpiHIcL9cCSQtRgADT8WhLIgBMxx96IkdlUtBBHu5fUPzAohiHB/vVgJWiGAwDkYwaa8Rd2IybyZkOcgo4RaIzK8LAhpjYhwL44EUdVCaUHnHA9/wFawUDLoOx5yckeu0ICMJfIneoUgwP/ynkvHmtfTOAfEckhoq0WE+7BLaKtFhHv3Tlx64yShDhkb5v3lPBS7QhMpelxeIzjgFWqQ8JzvX4Lr8ClVaudAQ+4Th5tXkeA+SexGAqyCBPdbYnYSYBXqTptxnCqpPfgVKu8kwFfB15nBV56dsK+YPRypsCvMhOSBD7G3glxAsH2MNVk+rsa5oMbgiDiXbbEmaWxr4qSSTEraakHQFeR4ISbOnorxXzF5CK1aF5OHYBsh5nLyNOxHiGWSkvv2IiyTlOdjfREmKw/KcvBNgOfi8uiylqHz6NTJM9QnD1OdPFV18nj1yXNWJw9cnTx5feoI1KmzUKcORZ06HX3qmNSp81KnDk6dOkF16ijVqTNVpw5XnTpldeq41alz16YPgDp9EtTpI6FNnw11+pBo06dFnT422vT50aYPkjZ9orTpo6VMnzFt+rAp06fuv9DHT50+hwYA"
+              :alt="currentTariff.name"
+              :src="currentTariff.icon"
             />
             <div class="flex flex-col -space-y-1">
               <p class="text-[14px] opacity-50 font-semibold">Тариф</p>
-              <p class="text-[18px] opacity-80 font-semibold">TON</p>
+              <div class="flex items-baseline gap-x-1">
+                <p class="text-[18px] opacity-80 font-semibold">{{ currentTariff.name }}</p>
+                <p class="text-[10px] opacity-60">{{ currentTariff.rate }}%</p>
+              </div>
             </div>
           </div>
-          <div class="flex items-center gap-x-2 transition-opacity duration-200">
+          <div v-if="nextTariff" class="flex items-center gap-x-2 transition-opacity duration-200" :class="{ 'opacity-40': progressToNext.percentage < 50 }">
             <div class="flex flex-col -space-y-1 items-end">
               <p class="text-[14px] opacity-50 font-semibold">Тариф</p>
-              <p class="text-[18px] opacity-80 font-semibold">ETH</p>
+              <div class="flex items-baseline gap-x-1">
+                <p class="text-[18px] opacity-80 font-semibold">{{ nextTariff.name }}</p>
+                <p class="text-[10px] opacity-60">{{ nextTariff.rate }}%</p>
+              </div>
             </div>
             <img
               class="h-7 w-7"
-              alt="ETH"
-              src="data:image/webp;base64,UklGRsoDAABXRUJQVlA4WAoAAAAQAAAATwAATwAAQUxQSH0BAAABkFZtb91IHwRBEJRAMAQzmDCoGTQMXAaBYAiG8EEQBM3s9uLY2svPiJgAXC1pr410d7featkEC0u60weyJlljO83H1zSd3MwvZtaZ5GY+IW/zZPqkzHNo84lPneDLfGrLV8ndp79fo90X7HqB0pekDlP6otRBSl+WOkTpC1NHdF+6y2d3X/z+Ufbl9w/U1jN97/QA21vZQ8zvMAbKq5sHWV4oozB5lj3M8oxx2JPkgW6/1UhOAOKRmgApFE9AjeUAGAshHqxs0aQSzf6IprZoWo+GFo7/92U0Fk5v0bRHNHWPpqRoNolGwFgIHLFUIMWSALFQBMAZSQWALZL0GywO4mmJIz8Ti4L6DCWKgpfCGIg3cwz5HbQITryttp7pe9jXy/j0WO3Ax9LX6hioXIk6Asp1qBirXIWK0co1qBivfYWuuPSY7xBcnG0u23G9njM1xZSZszBj2sIZrAgm1syrrAhmT48L7NywpKQHR/BIgoVlK7V1+41sdU+CqwEAVlA4ICYCAACwDQCdASpQAFAAPpFCnEklpCMhJTgMMLASCWgAwY3sfjWujx5OFCd9Em2r5/LTLd4o/cG8AIIDtL7RV/CvIN+Mu7TpUu0mZ3mNaXhNAQ3Pu3LAI2pJc5fOXxRgxZIChUpe0yYHo/vSdLo4tsS8dgU0o/VvnEpAAP7pcVncQSfEwMbrRNarBDH1f1h5q5tQpRU5I90nhqMKkuMGsZtlj5kvf1ve9VUmBFK4EtiwfmD9L3HYh4Bo1Hscmg2f5U+qHubAPoJtT0y3S3/dtVA8A7Jb809H583a02RECqXhpIys0GRMYNaZiAy82WdrYblPrwuAi+9Cj94jv8Ikp9NGBOYgAnybHFS1g6vOqJ+Z6cwd1mbFGFTgrcaT2iPrABDc9qHwahbdKiC5oKXMP4/xJYmUccezs5XlKqk0l5ixyH+z2th5AyqDj4kYmIDTxnV9HyyTNKGxFQI/wgX5lvv8RpIYNx3VP5pV0mPFL9GrXZrBGIS4Ot5gHr/m8I++/94V7Cx2FyzBcZCHp7olxDapbBSA0Lk1VcGWnUM4KJHz6b3vKq5yPqTHdawA7kXctkKl4bVYNE9fUvyu3BRtjumu1QoDitq2tf8HJ58LW7ZNU7VbCMP4JJ8dHdS2y4i2WZG4/35hTcTATd9Gzj9n2dau9+P3UqgJuRl7jaPEK5Ex85G6mmz2bzSkcrSg329u/WU//4X7/8KX//4Ql7/aA5tBOpLugY7uTgAA"
+              :alt="nextTariff.name"
+              :src="nextTariff.icon"
             />
+          </div>
+          <div v-else class="flex items-center gap-x-2">
+            <div class="flex flex-col -space-y-1 items-end">
+              <p class="text-[14px] opacity-50 font-semibold">Статус</p>
+              <p class="text-[16px] text-green-400 font-semibold">MAX</p>
+            </div>
+            <div class="h-7 w-7 rounded-full bg-green-400/20 flex items-center justify-center">
+              <svg class="h-4 w-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
           </div>
         </div>
         <div class="flex justify-between px-5 mt-2">
           <p class="text-[14px] opacity-50">Текущий тариф</p>
-          <p class="text-[14px] opacity-50">Следующий тариф</p>
+          <p class="text-[14px] opacity-50">{{ nextTariff ? 'Следующий тариф' : 'Максимальный' }}</p>
         </div>
         <div class="relative h-[2px] mt-px rounded w-[97%] ml-[7px] overflow-visible">
-          <div class="absolute inset-0 h-full" style="width: 0%; transition: none;">
+          <div class="absolute inset-0 h-full bg-gray-600/30 rounded"></div>
+          <div 
+            class="absolute inset-0 h-full transition-all duration-1000 ease-out rounded" 
+            :style="{ width: `${progressToNext.percentage}%` }"
+          >
             <div
-              class="absolute inset-0 w-full h-full"
+              class="absolute inset-0 w-full h-full rounded"
               style="background-image: linear-gradient(rgb(179, 241, 6), rgb(94, 255, 3) 100%); background-color: rgb(13, 197, 106);"
             ></div>
             <div
-              class="absolute inset-0 w-full h-full opacity-40 backdrop-blur-sm"
+              class="absolute inset-0 w-full h-full opacity-40 backdrop-blur-sm rounded"
               style="background-image: linear-gradient(rgb(179, 241, 6), rgb(94, 255, 3) 100%); background-color: rgb(13, 197, 106);"
             ></div>
           </div>
         </div>
         <div class="flex justify-between items-center text-[10px] font-mont mt-7">
           <p>Личный депозит:</p>
-          <p class="translate-y-px">0<span class="font-sans">₽</span></p>
+          <p class="translate-y-px">{{ formatAmount(stakeData.stakeBalance) }}<span class="font-sans">₽</span></p>
         </div>
         <div class="w-full h-px opacity-50 bg-[#4B4B4B] mt-[2px]"></div>
         <div class="flex justify-between items-center text-[10px] font-mont mt-1">
-          <p>До следующего тарифа:</p>
-          <p class="translate-y-px">10000<span class="font-sans">₽</span></p>
+          <p>{{ nextTariff ? 'До следующего тарифа:' : 'Максимальный тариф' }}</p>
+          <p class="translate-y-px">
+            <span v-if="nextTariff">{{ formatAmount(progressToNext.needed) }}<span class="font-sans">₽</span></span>
+            <span v-else class="text-green-400">✓</span>
+          </p>
+        </div>
+        <div v-if="nextTariff" class="w-full h-px opacity-50 bg-[#4B4B4B] mt-[2px]"></div>
+        <div v-if="nextTariff" class="flex justify-between items-center text-[10px] font-mont mt-1">
+          <p>Прирост доходности:</p>
+          <p class="translate-y-px text-green-400">+{{ (nextTariff.rate - currentTariff.rate).toFixed(1) }}%</p>
         </div>
         <div class="w-full h-px opacity-50 bg-[#4B4B4B] mt-[2px]"></div>
       </div>
@@ -167,5 +196,76 @@
   </template>
   
   <script setup>
-  // Нет необходимости в скрипте, так как компонент статический
+  import { computed } from 'vue'
+  import { useUserStore } from '../../../stores/user.js'
+  
+  // Подключаем пользовательский store
+  const userStore = useUserStore()
+  
+  // Данные стейкинга
+  const stakeData = computed(() => userStore.stakeData)
+  
+  // Конфигурация тарифов (должна совпадать с серверной)
+  const tariffConfig = {
+    'TON': {
+      name: 'TON',
+      icon: '/icon/ton.svg',
+      threshold: 0,
+      rate: 1.7
+    },
+    'ETH': {
+      name: 'ETH',
+      icon: '/icon/eth.webp',
+      threshold: 10000,
+      rate: 2.1
+    },
+    'USDT': {
+      name: 'USDT',
+      icon: '/icon/teher.webp',
+      threshold: 100000,
+      rate: 2.7
+    }
+  }
+  
+  // Текущий тариф
+  const currentTariff = computed(() => {
+    return tariffConfig[stakeData.value.currentTariff] || tariffConfig['TON']
+  })
+  
+  // Следующий тариф
+  const nextTariff = computed(() => {
+    const currentBalance = stakeData.value.stakeBalance
+    
+    if (currentBalance < tariffConfig.ETH.threshold) {
+      return tariffConfig.ETH
+    } else if (currentBalance < tariffConfig.USDT.threshold) {
+      return tariffConfig.USDT
+    }
+    
+    return null // Уже максимальный тариф
+  })
+  
+  // Прогресс до следующего тарифа
+  const progressToNext = computed(() => {
+    const currentBalance = stakeData.value.stakeBalance
+    const next = nextTariff.value
+    
+    if (!next) return { percentage: 100, needed: 0 }
+    
+    const needed = next.threshold - currentBalance
+    const progress = (currentBalance / next.threshold) * 100
+    
+    return {
+      percentage: Math.max(0, Math.min(100, progress)),
+      needed: Math.max(0, needed)
+    }
+  })
+  
+  // Форматирование сумм
+  const formatAmount = (amount) => {
+    return parseFloat(amount || 0).toLocaleString('ru-RU', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+  }
   </script>

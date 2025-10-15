@@ -40,7 +40,7 @@
               <p class="text-[20px] font-medium text-black -translate-y-[2px]">На вкладке</p>
             </div>
             <p class="text-[14px] text-[#597803] -mt-1">Баланс:</p>
-            <p class="text-[24px] text-black -mt-1">₽0</p>
+            <p class="text-[24px] text-black -mt-1">₽{{ formattedStakeBalance }}</p>
             <div class="w-[76px] h-[22px] -mt-1 flex justify-between items-center rounded-[38.75px] pl-[2.6px] pr-[4.31px] box-border border-[0.3px] border-gray-600/30" style="backdrop-filter: blur(5.93716px); background: rgb(27, 27, 27);">
               <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <foreignObject x="-4.17818" y="-4.71651" width="26.422" height="26.422">
@@ -67,7 +67,7 @@
                 </defs>
               </svg>
               <div class="box-border w-[45px] h-[16px] border-[0.34px] border-white/30 rounded-[31.75px] flex items-center justify-center" style="backdrop-filter: blur(4.8691px); background: linear-gradient(90deg, rgba(22, 23, 24, 0.4) 0%, rgba(12, 13, 15, 0.4) 100%);">
-                <p class="text-[10.76px] translate-y-[1px]">0.0</p>
+                <p class="text-[10.76px] translate-y-[1px]">{{ stakeGrowth }}</p>
               </div>
             </div>
           </div>
@@ -116,7 +116,7 @@
               <p class="text-[20px] font-medium text-white -translate-y-[2px]">Заработано</p>
             </div>
             <p class="text-[14px] text-gray-400 -mt-1">Получено:</p>
-            <p class="text-[24px] text-white -mt-1">₽0</p>
+            <p class="text-[24px] text-white -mt-1">₽{{ formattedProfitAll }}</p>
             <div class="w-[76px] h-[22px] -mt-1 flex justify-between items-center rounded-[38.75px] pl-[2.6px] pr-[4.31px] box-border border-[0.3px] border-gray-600/30" style="backdrop-filter: blur(5.93716px); background: rgb(27, 27, 27);">
               <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <foreignObject x="-4.17818" y="-4.71651" width="26.422" height="26.422">
@@ -143,7 +143,7 @@
                 </defs>
               </svg>
               <div class="box-border w-[45px] h-[16px] border-[0.34px] border-white/30 rounded-[31.75px] flex items-center justify-center" style="backdrop-filter: blur(4.8691px); background: linear-gradient(90deg, rgba(22, 23, 24, 0.4) 0%, rgba(12, 13, 15, 0.4) 100%);">
-                <p class="text-[10.76px] translate-y-[1px]">0.0</p>
+                <p class="text-[10.76px] translate-y-[1px]">{{ profitGrowth }}</p>
               </div>
             </div>
           </div>
@@ -189,7 +189,7 @@
               <p class="text-[20px] font-medium text-white -translate-y-[2px]">Партнеров</p>
             </div>
             <p class="text-[14px] text-gray-400 -mt-1">Приглашенных:</p>
-            <p class="text-[24px] -mt-1">0</p>
+            <p class="text-[24px] -mt-1">{{ totalPartners }}</p>
             <div class="w-[76px] h-[22px] -mt-1 flex justify-between items-center rounded-[38.75px] pl-[2.6px] pr-[4.31px] box-border border-[0.3px] border-gray-600/30" style="backdrop-filter: blur(5.93716px); background: rgb(27, 27, 27);">
               <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <foreignObject x="-4.17818" y="-4.71651" width="26.422" height="26.422">
@@ -216,7 +216,7 @@
                 </defs>
               </svg>
               <div class="box-border w-[45px] h-[16px] border-[0.34px] border-white/30 rounded-[31.75px] flex items-center justify-center" style="backdrop-filter: blur(4.8691px); background: linear-gradient(90deg, rgba(22, 23, 24, 0.4) 0%, rgba(12, 13, 15, 0.4) 100%);">
-                <p class="text-[10.76px] translate-y-[1px]">0</p>
+                <p class="text-[10.76px] translate-y-[1px]">{{ totalPartners }}</p>
               </div>
             </div>
           </div>
@@ -266,7 +266,7 @@
               <p class="text-[20px] font-medium text-white -translate-y-[2px]">Партнерских</p>
             </div>
             <p class="text-[14px] text-gray-400 -mt-1">Начислений:</p>
-            <p class="text-[24px] -mt-1">₽0</p>
+            <p class="text-[24px] -mt-1">₽{{ formattedPartnersBalance }}</p>
             <div class="w-[76px] h-[22px] -mt-1 flex justify-between items-center rounded-[38.75px] pl-[2.6px] pr-[4.31px] box-border border-[0.3px] border-gray-600/30" style="backdrop-filter: blur(5.93716px); background: rgb(27, 27, 27);">
               <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <foreignObject x="-4.17818" y="-4.71651" width="26.422" height="26.422">
@@ -293,7 +293,7 @@
                 </defs>
               </svg>
               <div class="box-border w-[45px] h-[16px] border-[0.34px] border-white/30 rounded-[31.75px] flex items-center justify-center" style="backdrop-filter: blur(4.8691px); background: linear-gradient(90deg, rgba(22, 23, 24, 0.4) 0%, rgba(12, 13, 15, 0.4) 100%);">
-                <p class="text-[10.76px] translate-y-[1px]">0.0</p>
+                <p class="text-[10.76px] translate-y-[1px]">{{ partnersGrowth }}</p>
               </div>
             </div>
           </div>
@@ -303,5 +303,59 @@
   </template>
   
   <script setup>
-  // No script needed for static content
+  import { computed } from 'vue'
+  import { useUser } from '../../../composables/useUser.js'
+  import { useUserStore } from '../../../stores/user.js'
+  
+  // Получаем данные пользователя
+  const { 
+    stakeBalance, 
+    profitAll, 
+    partnersBalance,
+    formatBalance 
+  } = useUser()
+  
+  const userStore = useUserStore()
+  
+  // Получаем количество рефералов
+  const totalPartners = computed(() => userStore.referralData?.totalPartners || 0)
+  
+  // Форматирование для отображения
+  const formattedStakeBalance = computed(() => {
+    const value = parseFloat(stakeBalance.value) || 0
+    return value.toLocaleString('ru-RU', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+  })
+  
+  const formattedProfitAll = computed(() => {
+    const value = parseFloat(profitAll.value) || 0
+    return value.toLocaleString('ru-RU', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+  })
+  
+  const formattedPartnersBalance = computed(() => {
+    const value = parseFloat(partnersBalance.value) || 0
+    return value.toLocaleString('ru-RU', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+  })
+  
+  // Рост/падение в процентах (можно настроить логику)
+  const stakeGrowth = computed(() => {
+    // Заглушка, можно добавить реальную логику расчета роста
+    return 0.0
+  })
+  
+  const profitGrowth = computed(() => {
+    return 0.0
+  })
+  
+  const partnersGrowth = computed(() => {
+    return 0.0
+  })
   </script>
